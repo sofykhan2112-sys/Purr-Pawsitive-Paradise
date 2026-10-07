@@ -189,6 +189,17 @@ Local API timing test:
 - Target: below 1000 ms p95
 - Result: Passed
 
+Local concurrency test:
+
+- Concurrent requests: 100
+- Successful requests: 100
+- Failed requests: 0
+- Average response time: 752.45 ms
+- P95 response time: 930.02 ms
+- Maximum response time: 936.33 ms
+- Total batch completion time: 1064.37 ms
+- Result: Passed
+
 Performance optimization has been deferred for now.
 
 ## Documentation
