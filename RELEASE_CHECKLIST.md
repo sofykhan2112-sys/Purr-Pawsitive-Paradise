@@ -168,6 +168,8 @@ Safari requires testing on an Apple device or suitable Safari testing environmen
 
 - [x] Production build tested with Lighthouse
 - [x] Local article search API p95 response time is below 1 second
+- [x] Local article read API p95 response time is below 1 second
+- [x] Basic 100-concurrent-request local capacity test passed
 - [ ] LCP performance target met
 - [ ] Total Blocking Time optimized
 
@@ -182,10 +184,18 @@ Current clean Lighthouse test:
 - Cumulative Layout Shift: 0.087
 - Speed Index: 1.9 s
 
-Local API timing test:
+Local article search API timing test:
 
-- Article search average response time: 222.29 ms
-- Article search p95 response time: 229.62 ms
+- Average response time: 222.29 ms
+- P95 response time: 229.62 ms
+- Target: below 1000 ms p95
+- Result: Passed
+
+Local article read API timing test:
+
+- Tested article slug: demo-exploring-the-turtle-guide
+- Average response time: 226.12 ms
+- P95 response time: 231.03 ms
 - Target: below 1000 ms p95
 - Result: Passed
 
@@ -199,6 +209,8 @@ Local concurrency test:
 - Maximum response time: 936.33 ms
 - Total batch completion time: 1064.37 ms
 - Result: Passed
+
+The concurrency test is a basic local capacity verification and is not a substitute for a full production load test.
 
 Performance optimization has been deferred for now.
 
@@ -218,6 +230,9 @@ Performance optimization has been deferred for now.
 - [x] Initial project commit created
 - [x] GitHub repository configured
 - [x] Main branch pushed successfully to GitHub
+- [ ] Latest release-checklist update pushed to GitHub
+
+The latest local release-checklist commit is currently safe in the local Git repository. A recent GitHub remote Internal Server Error prevented the latest push from completing and should be retried later.
 
 ## Production deployment
 
@@ -256,10 +271,17 @@ The following items are intentionally deferred:
 
 ## Current release assessment
 
-The application software and core workflows are complete for local academic/demo use, including administrator MFA recovery-code support, production dependency security verification, final production build verification, Prisma validation, backup restoration testing, compatibility testing on Chrome, Edge, and Firefox, and local API performance verification.
+The application software and core workflows are complete for local academic/demo use, including administrator MFA recovery-code support, production dependency security verification, final production build verification, Prisma validation, backup restoration testing, compatibility testing on Chrome, Edge, and Firefox, local API performance verification, and a basic 100-concurrent-request local capacity test.
 
 The project is suitable for continued academic/demo use in its current form.
 
-The local article search API performance target has been met, with a measured p95 response time of 229.62 ms against the target of below 1000 ms.
+Local API performance requirements have been met during testing:
+
+- Article search p95: 229.62 ms
+- Article read p95: 231.03 ms
+- 100 concurrent requests: 100 successful, 0 failed
+- Concurrent-request p95: 930.02 ms
+
+The frontend Lighthouse performance target is not yet met, primarily because the measured Largest Contentful Paint remains above the intended target.
 
 A real public production launch still requires completion of the deferred release items above, including FR02 content completion, Lighthouse/LCP performance optimization, Safari verification, operational partner readiness where applicable, and production deployment.
