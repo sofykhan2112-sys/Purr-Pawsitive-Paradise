@@ -6,20 +6,18 @@ function required(name: string): string {
   const value = process.env[name]
 
   if (!value) {
-    throw new Error(`Missing ${name} in backend/.env`)
+    throw new Error(`Missing ${name} environment variable`)
   }
 
   return value
 }
 
 const adapter = new PrismaPg({
-  host: required('PGHOST'),
-  port: Number(required('PGPORT')),
-  database: required('PGDATABASE'),
-  user: required('PGUSER'),
-  password: required('PGPASSWORD'),
+  connectionString: required('DATABASE_URL'),
   max: 5,
   connectionTimeoutMillis: 5000,
 })
 
-export const prisma = new PrismaClient({ adapter })
+export const prisma = new PrismaClient({
+  adapter,
+})
