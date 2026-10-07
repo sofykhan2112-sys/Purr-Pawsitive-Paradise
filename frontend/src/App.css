@@ -140,7 +140,9 @@ h1 em {
   font-size: 13px;
   font-weight: 600;
   text-decoration: none;
-  transition: background 180ms ease, transform 180ms ease;
+  transition:
+    background 180ms ease,
+    transform 180ms ease;
 }
 
 .dark-button {
@@ -185,6 +187,7 @@ h1 em {
 }
 
 .hero-visual img {
+  display: block;
   width: 100%;
   height: auto;
   aspect-ratio: 4 / 5;
@@ -227,8 +230,16 @@ h1 em {
   letter-spacing: 1px;
 }
 
+/*
+  Performance optimization:
+  sections below the initial viewport are skipped until
+  the browser needs to render them.
+*/
+
 .companions {
   padding-block: 88px;
+  content-visibility: auto;
+  contain-intrinsic-size: auto 850px;
 }
 
 .section-heading {
@@ -270,7 +281,9 @@ h2 {
   background: transparent;
   color: #193f36;
   font-size: 18px;
-  transition: background 180ms ease, color 180ms ease;
+  transition:
+    background 180ms ease,
+    color 180ms ease;
 }
 
 .pet-switcher button:hover {
@@ -348,6 +361,8 @@ h2 {
 .support-section {
   padding-block: 72px;
   background: #f0e9df;
+  content-visibility: auto;
+  contain-intrinsic-size: auto 650px;
 }
 
 .service-grid {
@@ -398,6 +413,8 @@ h2 {
 .about {
   padding-block: 88px;
   text-align: center;
+  content-visibility: auto;
+  contain-intrinsic-size: auto 450px;
 }
 
 .about h2 {
@@ -417,6 +434,8 @@ h2 {
   padding-block: 30px;
   background: #193f36;
   color: #fffaf0;
+  content-visibility: auto;
+  contain-intrinsic-size: auto 100px;
 }
 
 .footer-inner {

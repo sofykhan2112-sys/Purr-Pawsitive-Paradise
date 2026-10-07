@@ -258,13 +258,15 @@ function Home() {
           </div>
 
           <div className="hero-visual">
-            <img
-              src="/images/pet-hero.png"
+          <img
+              src="/images/pet-hero.webp"
               alt="A golden retriever sitting beside a cream-coloured cat"
               width="1122"
               height="1402"
-              fetchPriority="high"
-            />
+               fetchPriority="high"
+               loading="eager"
+              decoding="async"
+/>
 
             <div className="image-label">
               <span>THE GOOD LIFE, TOGETHER</span>
