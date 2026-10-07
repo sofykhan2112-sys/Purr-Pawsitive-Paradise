@@ -56,8 +56,10 @@
 - [x] Image alt-text support
 - [x] Image-rights metadata support
 - [x] Editorial workflow
+- [x] Non-clinical FR02 care-topic coverage completed
+- [x] 14 of 20 required care-topic areas have public coverage
+- [ ] 6 clinical care-topic areas awaiting qualified review
 - [ ] Full FR02 public care-topic coverage
-- [ ] Qualified review of remaining clinical content
 
 ## Veterinary services
 
@@ -265,14 +267,14 @@ Until those operational dependencies exist, affected workflows should remain cle
 
 The following items are intentionally deferred:
 
-1. Full FR02 care-topic publication and qualified review.
+1. Qualified review and publication of the 6 remaining clinical FR02 topics.
 2. Lighthouse/LCP performance optimization.
 3. Production hosting/deployment.
 
 ## Current release assessment
 
 The application software and core workflows are complete for local academic/demo use, including administrator MFA recovery-code support, production dependency security verification, final production build verification, Prisma validation, backup restoration testing, compatibility testing on Chrome, Edge, and Firefox, local API performance verification, and a basic 100-concurrent-request local capacity test.
-
+FR02 content coverage is currently 14 of 20 required topic areas. The remaining 6 areas are the HEALTH and PREVENTIVE_CARE topics for cats, dogs, and turtles, which are intentionally withheld from public publication until qualified clinical review is completed.
 The project is suitable for continued academic/demo use in its current form.
 
 Local API performance requirements have been met during testing:
