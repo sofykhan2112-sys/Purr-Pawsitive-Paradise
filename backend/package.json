@@ -3,6 +3,10 @@
   "version": "1.0.0",
   "description": "Purr-Pawsitive-Paradise backend API",
   "main": "dist/server.js",
+  "overrides": {
+    "deepmerge-ts": "^8.0.2",
+    "mysql2": "^3.23.1"
+  },
   "scripts": {
     "dev": "tsx watch src/server.ts",
     "build": "tsc -p tsconfig.json",
