@@ -1,0 +1,202 @@
+.vet-workspace-page {
+    min-height: 100vh;
+    background: #faf9f1;
+    color: #16483b;
+  }
+  
+  .vet-workspace-main {
+    padding-top: 44px;
+    padding-bottom: 72px;
+  }
+  
+  .vet-workspace-heading {
+    margin-bottom: 32px;
+  }
+  
+  .vet-workspace-heading h1 {
+    margin: 14px 0;
+    font-size: clamp(2.3rem, 5vw, 4rem);
+    letter-spacing: -0.04em;
+    overflow-wrap: anywhere;
+  }
+  
+  .vet-workspace-heading > p:last-child {
+    max-width: 680px;
+    color: #58685e;
+    line-height: 1.8;
+  }
+  
+  .vet-workspace-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 24px;
+    margin-top: 24px;
+  }
+  
+  .vet-workspace-card {
+    min-width: 0;
+    padding: 28px;
+    border: 1px solid #d8dfd0;
+    border-radius: 18px;
+    background: #fffef8;
+  }
+  
+  .vet-workspace-card h2 {
+    margin: 0 0 18px;
+    font-size: 1.55rem;
+    overflow-wrap: anywhere;
+  }
+  
+  .vet-workspace-card p {
+    line-height: 1.8;
+  }
+  
+  .vet-workspace-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 20px;
+  }
+  
+  .vet-workspace-badges span {
+    padding: 6px 12px;
+    border-radius: 999px;
+    background: #edf2e6;
+    font-size: 0.8rem;
+    text-transform: capitalize;
+  }
+  
+  .vet-workspace-description {
+    max-width: 760px;
+    color: #58685e;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+  }
+  
+  .vet-workspace-species {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 0;
+    margin: 20px 0 0;
+    list-style: none;
+  }
+  
+  .vet-workspace-species li {
+    padding: 6px 12px;
+    border: 1px solid #d8dfd0;
+    border-radius: 999px;
+    font-size: 0.85rem;
+  }
+  
+  .vet-workspace-details {
+    margin: 0;
+  }
+  
+  .vet-workspace-details > div {
+    padding: 14px 0;
+    border-bottom: 1px solid #e5e8dc;
+  }
+  
+  .vet-workspace-details > div:last-child {
+    border-bottom: 0;
+  }
+  
+  .vet-workspace-details dt {
+    margin-bottom: 5px;
+    font-size: 0.85rem;
+    font-weight: 600;
+  }
+  
+  .vet-workspace-details dd {
+    margin: 0;
+    color: #58685e;
+    line-height: 1.8;
+    white-space: pre-line;
+    overflow-wrap: anywhere;
+  }
+  
+  .vet-workspace-note {
+    color: #58685e;
+    font-size: 0.9rem;
+  }
+  
+  .vet-workspace-notice,
+  .vet-workspace-error {
+    margin: 0 0 24px;
+    padding: 20px 24px;
+    border-radius: 12px;
+    line-height: 1.8;
+  }
+  
+  .vet-workspace-notice {
+    background: #f3eddf;
+    color: #65522e;
+  }
+  
+  .vet-workspace-error {
+    background: #fbefeb;
+    border: 1px solid #dfbcb4;
+    color: #7a3429;
+  }
+  
+  .vet-workspace-page button {
+    font: inherit;
+    cursor: pointer;
+  }
+  
+  .vet-workspace-page :is(a, button):focus-visible {
+    outline: 3px solid #6e8e52;
+    outline-offset: 4px;
+  }
+  
+  @media (max-width: 750px) {
+    .vet-workspace-grid {
+      grid-template-columns: 1fr;
+    }
+  
+    .vet-workspace-card {
+      padding: 22px;
+    }
+  }
+  .vet-workspace-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 14px;
+    margin-top: 24px;
+  }
+  
+  .vet-workspace-secondary {
+    padding: 12px 16px;
+    border: 1px solid #bdcdb7;
+    border-radius: 8px;
+    background: transparent;
+    color: #16483b;
+  }
+  
+  .vet-workspace-confirmation {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    margin: 20px 0;
+    line-height: 1.8;
+  }
+  
+  .vet-workspace-confirmation input {
+    flex-shrink: 0;
+    width: 18px;
+    height: 18px;
+    margin-top: 5px;
+    accent-color: #16483b;
+  }
+  
+  .vet-workspace-page button:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+  }
+  
+  .vet-workspace-page input:focus-visible {
+    outline: 3px solid #6e8e52;
+    outline-offset: 4px;
+  }

@@ -1,0 +1,157 @@
+.signup-page {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    min-height: 100vh;
+  }
+  
+  .signup-story {
+    padding: 40px 48px;
+    background: #edf0e6;
+  }
+  
+  .signup-story-copy {
+    max-width: 480px;
+    margin: 56px 0 30px;
+  }
+  
+  .signup-story h1 {
+    font-size: clamp(40px, 4.5vw, 62px);
+  }
+  
+  .signup-story-copy > p:last-child {
+    max-width: 390px;
+    margin-top: 24px;
+    color: #596451;
+    font-size: 15px;
+    line-height: 1.8;
+  }
+  
+  .signup-photo {
+    width: min(100%, 360px);
+    height: auto;
+    margin-inline: auto;
+    border-radius: 160px 160px 12px 12px;
+  }
+  
+  .signup-form-panel {
+    display: flex;
+    flex-direction: column;
+    padding: 40px 56px;
+  }
+  
+  .signup-back {
+    align-self: flex-end;
+  }
+  
+  .signup-form-content {
+    width: 100%;
+    max-width: 440px;
+    margin: auto;
+    padding-block: 48px;
+  }
+  
+  .signup-intro {
+    margin: 16px 0 32px;
+    color: #606a60;
+    font-size: 14px;
+    line-height: 1.7;
+  }
+  
+  .signup-field {
+    margin-bottom: 22px;
+  }
+  
+  .signup-field label {
+    display: block;
+    margin-bottom: 9px;
+    font-size: 13px;
+    font-weight: 600;
+  }
+  
+  .signup-field input {
+    width: 100%;
+    min-height: 50px;
+    padding: 13px 15px;
+    border: 1px solid #c6cebf;
+    border-radius: 6px;
+    background: #fffdf8;
+    color: #193f36;
+    font-size: 16px;
+  }
+  
+  .signup-field input:focus-visible {
+    outline: 2px solid #49664f;
+    outline-offset: 3px;
+  }
+  
+  .signup-field small {
+    display: block;
+    margin-top: 8px;
+    color: #606a60;
+    font-size: 11px;
+    line-height: 1.6;
+  }
+  
+  .signup-submit {
+    width: 100%;
+    border: 0;
+    font: inherit;
+    font-size: 14px;
+  }
+  
+  .signup-submit:disabled {
+    cursor: wait;
+    opacity: 0.7;
+    transform: none;
+  }
+  
+  .signup-note {
+    margin-top: 18px;
+    text-align: center;
+    color: #606a60;
+    font-size: 11px;
+    line-height: 1.6;
+  }
+  
+  .signup-error {
+    margin-bottom: 20px;
+    padding: 14px;
+    border: 1px solid #dfb2a5;
+    border-radius: 6px;
+    background: #fff0eb;
+    color: #8a3022;
+    font-size: 13px;
+    line-height: 1.6;
+  }
+  
+  .signup-success > p:not(.eyebrow) {
+    margin-block: 24px;
+    color: #606a60;
+    line-height: 1.8;
+  }
+  
+  @media (max-width: 800px) {
+    .signup-page {
+      grid-template-columns: 1fr;
+    }
+  
+    .signup-story {
+      padding: 28px 24px;
+    }
+  
+    .signup-story-copy {
+      margin-block: 32px 12px;
+    }
+  
+    .signup-photo {
+      display: none;
+    }
+  
+    .signup-form-panel {
+      padding: 20px 24px;
+    }
+  
+    .signup-form-content {
+      padding-block: 28px;
+    }
+  }

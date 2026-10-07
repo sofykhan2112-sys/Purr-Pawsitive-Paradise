@@ -1,0 +1,106 @@
+.account-main {
+    padding-block: 56px 80px;
+  }
+  
+  .account-welcome {
+    padding: 40px;
+    border-radius: 12px;
+    background: #edf0e6;
+  }
+  
+  .account-welcome h1 {
+    margin-top: 18px;
+    font-size: clamp(36px, 5vw, 56px);
+    overflow-wrap: anywhere;
+  }
+  
+  .account-welcome > p:last-child {
+    margin-top: 20px;
+    color: #596451;
+    line-height: 1.8;
+  }
+  
+  .account-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    margin-top: 28px;
+  }
+  
+  .account-card {
+    min-width: 0;
+    padding: 32px;
+    border: 1px solid #d8ddd1;
+    border-radius: 12px;
+    background: #fffdf8;
+  }
+  
+  .account-card h2 {
+    font-size: 30px;
+  }
+  
+  .account-details {
+    margin: 28px 0 0;
+  }
+  
+  .account-details dt {
+    margin-top: 20px;
+    color: #606a60;
+    font-size: 12px;
+  }
+  
+  .account-details dd {
+    margin: 7px 0 0;
+    font-size: 16px;
+    overflow-wrap: anywhere;
+  }
+  
+  .account-pets-preview {
+    background: #f2e6d8;
+  }
+  
+  .account-pets-preview > p:not(.eyebrow) {
+    margin-block: 22px;
+    color: #62665c;
+    line-height: 1.8;
+  }
+  
+  .account-button {
+    border: 0;
+  }
+  
+  .account-button:disabled {
+    opacity: 0.7;
+    cursor: wait;
+  }
+  
+  .account-message {
+    padding-block: 80px;
+  }
+  
+  .account-message button {
+    margin-top: 20px;
+  }
+  
+  .account-error {
+    padding: 16px;
+    margin-bottom: 24px;
+    border-radius: 6px;
+    background: #fff0eb;
+    color: #8a3022;
+  }
+  
+  @media (max-width: 720px) {
+    .account-main {
+      padding-top: 28px;
+    }
+  
+    .account-grid {
+      grid-template-columns: 1fr;
+    }
+  
+    .account-welcome,
+    .account-card {
+      padding: 24px;
+    }
+  }

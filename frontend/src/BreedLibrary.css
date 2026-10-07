@@ -1,0 +1,79 @@
+.breed-library-page {
+    padding-block: 48px 80px;
+  }
+  
+  .breed-library-hero {
+    max-width: 780px;
+    margin-block: 40px 48px;
+  }
+  
+  .breed-library-hero h1,
+  .breed-record h1 {
+    margin-block: 12px 18px;
+  }
+  
+  .breed-library-hero p,
+  .breed-library-card p,
+  .breed-record p {
+    line-height: 1.75;
+  }
+  
+  .breed-library-grid {
+    display: grid;
+    grid-template-columns:
+      repeat(
+        auto-fit,
+        minmax(240px, 1fr)
+      );
+    gap: 24px;
+  }
+  
+  .breed-library-card,
+  .breed-record {
+    border: 1px solid #d9dfd4;
+    border-radius: 14px;
+    background: #fffdf8;
+    padding: 28px;
+  }
+  
+  .breed-library-card h2 {
+    margin-block: 8px 14px;
+  }
+  
+  .breed-library-card .text-link {
+    display: inline-block;
+    margin-top: 12px;
+  }
+  
+  .breed-library-notice {
+    margin-block: 24px;
+    padding: 18px;
+    border-radius: 10px;
+    background: #edf0e6;
+    line-height: 1.7;
+  }
+  
+  .breed-record {
+    max-width: 820px;
+    margin-top: 42px;
+  }
+  
+  .breed-record section {
+    margin-block: 32px;
+  }
+  
+  .breed-record h2 {
+    margin-bottom: 10px;
+  }
+  
+  @media (max-width: 640px) {
+    .breed-library-page {
+      padding-block: 32px 56px;
+    }
+  
+    .breed-library-card,
+    .breed-record {
+      padding: 22px;
+    }
+  }
+  

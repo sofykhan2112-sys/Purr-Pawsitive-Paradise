@@ -1,0 +1,735 @@
+generator client {
+  provider               = "prisma-client"
+  output                 = "../src/generated/prisma"
+  moduleFormat           = "esm"
+  generatedFileExtension = "ts"
+  importFileExtension    = "js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  OWNER
+  VET
+  AMBULANCE_PROVIDER
+  ADMIN
+}
+
+enum AccountStatus {
+  ACTIVE
+  SUSPENDED
+}
+
+enum Species {
+  CAT
+  DOG
+  TURTLE
+}
+
+enum ArticleStatus {
+  DRAFT
+  IN_REVIEW
+  PUBLISHED
+  ARCHIVED
+}
+
+enum ArticleTopic {
+  BREEDS_AND_SPECIES
+  DAILY_CARE
+  NUTRITION
+  GROOMING
+  HABITAT
+  ENRICHMENT
+  PREVENTIVE_CARE
+  HEALTH
+  RAPID_RELIEF
+}
+
+enum VetListingStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum VetVerificationStatus {
+  NOT_SUBMITTED
+  SUBMITTED
+  UNDER_REVIEW
+  APPROVED
+  REJECTED
+  SUSPENDED
+}
+
+enum AppointmentStatus {
+  REQUESTED
+  CONFIRMED
+  RESCHEDULE_PROPOSED
+  DECLINED
+  EXPIRED
+  CANCELLED
+  COMPLETED
+}
+
+enum AppointmentReason {
+  GENERAL_CHECKUP
+  PREVENTIVE_CARE
+  VACCINATION
+  FOLLOW_UP
+  HEALTH_CONCERN
+  OTHER
+}
+
+enum AppointmentContactPreference {
+  EMAIL
+  PHONE
+}
+
+enum AmbulanceListingStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum AmbulanceVerificationStatus {
+  NOT_SUBMITTED
+  SUBMITTED
+  UNDER_REVIEW
+  APPROVED
+  REJECTED
+  SUSPENDED
+}
+
+enum AmbulanceAvailability {
+  UNKNOWN
+  AVAILABLE
+  UNAVAILABLE
+}
+
+enum TransportRequestStatus {
+  REQUESTED
+  ACCEPTED
+  EN_ROUTE
+  ARRIVED
+  DECLINED
+  EXPIRED
+  CANCELLED
+  COMPLETED
+}
+
+enum IssueReportStatus {
+  OPEN
+  UNDER_REVIEW
+  RESOLVED
+  DISMISSED
+}
+
+enum IssueReportCategory {
+  INCORRECT_INFORMATION
+  OUTDATED_INFORMATION
+  SAFETY_CONCERN
+  CONTACT_DETAILS
+  OTHER
+}
+
+model User {
+  id           String        @id @default(uuid()) @db.Uuid
+  name         String        @db.VarChar(100)
+  email        String        @unique @db.VarChar(254)
+  passwordHash String
+  role         Role          @default(OWNER)
+  status       AccountStatus @default(ACTIVE)
+
+  // Administrator multi-factor authentication.
+  //
+  // The TOTP secret is encrypted before storage.
+  mfaEnabled          Boolean   @default(false)
+  mfaSecretCiphertext String?   @db.Text
+  mfaSecretIv         String?   @db.VarChar(64)
+  mfaSecretTag        String?   @db.VarChar(64)
+  mfaVerifiedAt       DateTime? @db.Timestamptz(3)
+
+  // One-way SHA-256 hashes of single-use administrator recovery codes.
+  // The plaintext recovery codes are shown only once when MFA is enabled.
+  mfaRecoveryCodeHashes String[] @default([])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  pets Pet[]
+
+  vetListing          VetListing?  @relation("VetListingOwner")
+  reviewedVetListings VetListing[] @relation("VetListingReviewer")
+
+  ownerAppointments    Appointment[]      @relation("AppointmentOwner")
+  providerAppointments Appointment[]      @relation("AppointmentProvider")
+  appointmentEvents    AppointmentEvent[] @relation("AppointmentEventActor")
+
+  notifications Notification[]
+
+  ambulanceListing          AmbulanceListing?  @relation("AmbulanceListingOwner")
+  reviewedAmbulanceListings AmbulanceListing[] @relation("AmbulanceListingReviewer")
+
+  passwordResetTokens PasswordResetToken[]
+
+  ownerTransportRequests    TransportRequest[]      @relation("TransportRequestOwner")
+  providerTransportRequests TransportRequest[]      @relation("TransportRequestProvider")
+  transportRequestEvents    TransportRequestEvent[] @relation("TransportRequestEventActor")
+
+  issueReports      IssueReport[]      @relation("IssueReportReporter")
+  issueReportEvents IssueReportEvent[] @relation("IssueReportEventActor")
+
+  @@map("users")
+}
+
+model PasswordResetToken {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @db.Uuid
+  tokenHash String   @unique @db.VarChar(64)
+  expiresAt DateTime @db.Timestamptz(3)
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
+  @@map("password_reset_tokens")
+}
+
+model Pet {
+  id          String   @id @default(uuid()) @db.Uuid
+  ownerId     String   @db.Uuid
+  name        String   @db.VarChar(100)
+  species     Species
+  breedOrType String?  @db.VarChar(100)
+  ageGroup    String?  @db.VarChar(50)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  owner User @relation(fields: [ownerId], references: [id], onDelete: Restrict)
+
+  appointments      Appointment[]
+  transportRequests TransportRequest[]
+
+  @@index([ownerId])
+  @@map("pets")
+}
+
+model Session {
+  sid    String   @id @db.VarChar(255)
+  sess   Json     @db.Json
+  expire DateTime @db.Timestamp(6)
+
+  @@index([expire])
+  @@map("session")
+}
+
+model Article {
+  id      String        @id @default(uuid()) @db.Uuid
+  slug    String        @unique @db.VarChar(180)
+  title   String        @db.VarChar(180)
+  summary String        @db.VarChar(500)
+  body    String        @db.Text
+  species Species
+  topic   ArticleTopic
+  status  ArticleStatus @default(DRAFT)
+
+  sourceUrls             String[]
+  imageUrl               String?   @db.VarChar(2048)
+  imageAlt               String?   @db.VarChar(300)
+  imageRights            String?   @db.VarChar(1000)
+  requiresClinicalReview Boolean   @default(false)
+  reviewerName           String?   @db.VarChar(150)
+  reviewerCredentials    String?   @db.VarChar(250)
+  reviewedAt             DateTime?
+  reviewDueAt            DateTime?
+  publishedAt            DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  issueReports IssueReport[]
+
+  @@index([status, species, topic])
+  @@map("articles")
+}
+
+model BreedSpeciesRecord {
+  id              String  @id @default(uuid()) @db.Uuid
+  slug            String  @unique @db.VarChar(180)
+  petGroup        Species
+  name            String  @db.VarChar(180)
+  characteristics String  @db.Text
+  careSummary     String  @db.Text
+
+  // Stable article slugs that can be linked from this record.
+  articleSlugs String[] @default([])
+
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @db.Timestamptz(3)
+
+  @@index([petGroup, name])
+  @@map("breed_species_records")
+}
+
+model AuditEvent {
+  id         String   @id @default(uuid()) @db.Uuid
+  actorId    String?  @db.Uuid
+  actorLabel String   @db.VarChar(150)
+  action     String   @db.VarChar(100)
+  entityType String   @db.VarChar(50)
+  entityId   String   @db.VarChar(180)
+  details    Json?
+  createdAt  DateTime @default(now())
+
+  @@index([entityType, entityId])
+  @@index([createdAt])
+  @@map("audit_events")
+}
+
+model VetListing {
+  id                 String  @id @default(uuid()) @db.Uuid
+  slug               String  @unique @db.VarChar(180)
+  vetName            String  @db.VarChar(150)
+  clinicName         String  @db.VarChar(180)
+  qualifications     String? @db.VarChar(250)
+  registrationNumber String? @db.VarChar(100)
+  registrationBody   String? @db.VarChar(180)
+  description        String? @db.Text
+
+  species Species[] @default([])
+
+  addressLine1 String  @db.VarChar(200)
+  addressLine2 String? @db.VarChar(200)
+  city         String  @db.VarChar(100)
+  state        String  @db.VarChar(100)
+  postalCode   String? @db.VarChar(20)
+  countryCode  String  @default("IN") @db.VarChar(2)
+
+  latitude  Float?
+  longitude Float?
+
+  phone        String? @db.VarChar(30)
+  email        String? @db.VarChar(254)
+  websiteUrl   String? @db.VarChar(2048)
+  openingHours String? @db.VarChar(1000)
+
+  status          VetListingStatus @default(DRAFT)
+  isDemo          Boolean          @default(false)
+  publishedAt     DateTime?
+  lastConfirmedAt DateTime?
+
+  userId String? @unique @db.Uuid
+  user   User?   @relation("VetListingOwner", fields: [userId], references: [id], onDelete: Restrict)
+
+  verificationStatus      VetVerificationStatus @default(NOT_SUBMITTED)
+  verificationSubmittedAt DateTime?
+  verificationReviewedAt  DateTime?
+
+  verificationReviewedById String? @db.Uuid
+  verificationReviewedBy   User?   @relation("VetListingReviewer", fields: [verificationReviewedById], references: [id], onDelete: Restrict)
+
+  verificationNotes              String? @db.Text
+  verificationEvidenceReferences String? @db.Text
+
+  bookingEnabled Boolean @default(false)
+  timeZone       String  @default("Asia/Kolkata") @db.VarChar(100)
+
+  availabilityEnabled Boolean @default(false)
+  availabilityVersion Int     @default(1)
+
+  availabilityWindows VetAvailabilityWindow[]
+  availabilityBlocks  VetAvailabilityBlock[]
+
+  appointments Appointment[]
+  issueReports IssueReport[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([status, city])
+  @@index([status, state])
+  @@index([verificationStatus])
+  @@index([verificationReviewedById])
+  @@map("vet_listings")
+}
+
+model Appointment {
+  id String @id @default(uuid()) @db.Uuid
+
+  ownerId        String @db.Uuid
+  petId          String @db.Uuid
+  vetListingId   String @db.Uuid
+  providerUserId String @db.Uuid
+
+  owner    User       @relation("AppointmentOwner", fields: [ownerId], references: [id], onDelete: Restrict)
+  pet      Pet        @relation(fields: [petId], references: [id], onDelete: Restrict)
+  listing  VetListing @relation(fields: [vetListingId], references: [id], onDelete: Restrict)
+  provider User       @relation("AppointmentProvider", fields: [providerUserId], references: [id], onDelete: Restrict)
+
+  status AppointmentStatus @default(REQUESTED)
+
+  reasonCategory AppointmentReason
+  reasonDetails  String?           @db.VarChar(1000)
+
+  contactPreference AppointmentContactPreference
+  contactEmail      String?                      @db.VarChar(254)
+  contactPhone      String?                      @db.VarChar(30)
+
+  requestedStartAt DateTime @db.Timestamptz(3)
+  requestedEndAt   DateTime @db.Timestamptz(3)
+
+  confirmedStartAt DateTime? @db.Timestamptz(3)
+  confirmedEndAt   DateTime? @db.Timestamptz(3)
+
+  proposedStartAt DateTime? @db.Timestamptz(3)
+  proposedEndAt   DateTime? @db.Timestamptz(3)
+
+  timeZone String @db.VarChar(100)
+
+  isDemo Boolean @default(false)
+
+  idempotencyKey     String @db.VarChar(100)
+  requestFingerprint String @db.VarChar(64)
+
+  responseDueAt DateTime? @db.Timestamptz(3)
+  confirmedAt   DateTime? @db.Timestamptz(3)
+  declinedAt    DateTime? @db.Timestamptz(3)
+  cancelledAt   DateTime? @db.Timestamptz(3)
+  completedAt   DateTime? @db.Timestamptz(3)
+
+  version Int @default(1)
+
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @db.Timestamptz(3)
+
+  events AppointmentEvent[]
+
+  @@unique([ownerId, idempotencyKey])
+  @@index([ownerId, createdAt])
+  @@index([providerUserId, status, requestedStartAt])
+  @@index([vetListingId, status, confirmedStartAt])
+  @@index([petId])
+  @@index([status, responseDueAt])
+  @@map("appointments")
+}
+
+model AppointmentEvent {
+  id            String  @id @default(uuid()) @db.Uuid
+  appointmentId String  @db.Uuid
+  actorId       String? @db.Uuid
+
+  appointment Appointment @relation(fields: [appointmentId], references: [id], onDelete: Restrict)
+  actor       User?       @relation("AppointmentEventActor", fields: [actorId], references: [id], onDelete: Restrict)
+
+  version Int
+
+  action         String             @db.VarChar(100)
+  previousStatus AppointmentStatus?
+  newStatus      AppointmentStatus
+  reason         String?            @db.VarChar(1000)
+
+  details Json?
+
+  notifications Notification[]
+  createdAt     DateTime       @default(now()) @db.Timestamptz(3)
+
+  @@unique([appointmentId, version])
+  @@index([appointmentId, createdAt])
+  @@index([actorId])
+  @@map("appointment_events")
+}
+
+model VetAvailabilityWindow {
+  id           String @id @default(uuid()) @db.Uuid
+  vetListingId String @db.Uuid
+
+  weekday Int
+
+  startMinute Int
+  endMinute   Int
+
+  listing VetListing @relation(fields: [vetListingId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([vetListingId, weekday, startMinute, endMinute])
+  @@index([vetListingId, weekday])
+  @@map("vet_availability_windows")
+}
+
+model VetAvailabilityBlock {
+  id           String @id @default(uuid()) @db.Uuid
+  vetListingId String @db.Uuid
+
+  startsAt DateTime @db.Timestamptz(3)
+  endsAt   DateTime @db.Timestamptz(3)
+
+  reason String? @db.VarChar(500)
+
+  listing VetListing @relation(fields: [vetListingId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([vetListingId, startsAt, endsAt])
+  @@map("vet_availability_blocks")
+}
+
+model Notification {
+  id                 String @id @default(uuid()) @db.Uuid
+  userId             String @db.Uuid
+  appointmentEventId String @db.Uuid
+
+  user             User             @relation(fields: [userId], references: [id], onDelete: Restrict)
+  appointmentEvent AppointmentEvent @relation(fields: [appointmentEventId], references: [id], onDelete: Restrict)
+
+  readAt    DateTime? @db.Timestamptz(3)
+  createdAt DateTime  @default(now()) @db.Timestamptz(3)
+
+  @@unique([userId, appointmentEventId])
+  @@index([userId, readAt, createdAt])
+  @@index([appointmentEventId])
+  @@map("notifications")
+}
+
+model AmbulanceListing {
+  id           String  @id @default(uuid()) @db.Uuid
+  slug         String  @unique @db.VarChar(180)
+  providerName String  @db.VarChar(180)
+  description  String? @db.Text
+
+  species            Species[] @default([])
+  animalRestrictions String?   @db.VarChar(1000)
+
+  city        String @db.VarChar(100)
+  state       String @db.VarChar(100)
+  countryCode String @default("IN") @db.VarChar(2)
+
+  phone        String? @db.VarChar(30)
+  email        String? @db.VarChar(254)
+  websiteUrl   String? @db.VarChar(2048)
+  openingHours String? @db.VarChar(1000)
+  timeZone     String  @default("Asia/Kolkata") @db.VarChar(100)
+
+  status      AmbulanceListingStatus @default(DRAFT)
+  isDemo      Boolean                @default(false)
+  publishedAt DateTime?              @db.Timestamptz(3)
+
+  availability          AmbulanceAvailability @default(UNKNOWN)
+  availabilityUpdatedAt DateTime?             @db.Timestamptz(3)
+
+  requestsEnabled Boolean @default(false)
+
+  userId String? @unique @db.Uuid
+  user   User?   @relation("AmbulanceListingOwner", fields: [userId], references: [id], onDelete: Restrict)
+
+  verificationStatus      AmbulanceVerificationStatus @default(NOT_SUBMITTED)
+  verificationSubmittedAt DateTime?                   @db.Timestamptz(3)
+  verificationReviewedAt  DateTime?                   @db.Timestamptz(3)
+
+  verificationReviewedById String? @db.Uuid
+  verificationReviewedBy   User?   @relation("AmbulanceListingReviewer", fields: [verificationReviewedById], references: [id], onDelete: Restrict)
+
+  verificationNotes              String? @db.Text
+  verificationEvidenceReferences String? @db.Text
+
+  serviceAreas      AmbulanceServiceArea[]
+  transportRequests TransportRequest[]
+  issueReports      IssueReport[]
+
+  version   Int      @default(1)
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @db.Timestamptz(3)
+
+  @@index([status, city, state])
+  @@index([verificationStatus])
+  @@index([verificationReviewedById])
+  @@map("ambulance_listings")
+}
+
+model AmbulanceServiceArea {
+  id                 String @id @default(uuid()) @db.Uuid
+  ambulanceListingId String @db.Uuid
+
+  city        String @db.VarChar(100)
+  state       String @db.VarChar(100)
+  countryCode String @default("IN") @db.VarChar(2)
+
+  cityKey  String @db.VarChar(100)
+  stateKey String @db.VarChar(100)
+
+  listing AmbulanceListing @relation(fields: [ambulanceListingId], references: [id], onDelete: Cascade)
+
+  @@unique([ambulanceListingId, countryCode, stateKey, cityKey])
+  @@index([countryCode, stateKey, cityKey])
+  @@map("ambulance_service_areas")
+}
+
+model TransportRequest {
+  id String @id @default(uuid()) @db.Uuid
+
+  ownerId            String @db.Uuid
+  petId              String @db.Uuid
+  ambulanceListingId String @db.Uuid
+  providerUserId     String @db.Uuid
+
+  owner    User             @relation("TransportRequestOwner", fields: [ownerId], references: [id], onDelete: Restrict)
+  pet      Pet              @relation(fields: [petId], references: [id], onDelete: Restrict)
+  listing  AmbulanceListing @relation(fields: [ambulanceListingId], references: [id], onDelete: Restrict)
+  provider User             @relation("TransportRequestProvider", fields: [providerUserId], references: [id], onDelete: Restrict)
+
+  status TransportRequestStatus @default(REQUESTED)
+
+  petName    String  @db.VarChar(100)
+  petSpecies Species
+
+  pickupAddress     String  @db.VarChar(500)
+  pickupCity        String  @db.VarChar(100)
+  pickupState       String  @db.VarChar(100)
+  pickupCountryCode String  @default("IN") @db.VarChar(2)
+  pickupPostalCode  String? @db.VarChar(20)
+
+  destinationAddress     String  @db.VarChar(500)
+  destinationCity        String  @db.VarChar(100)
+  destinationState       String  @db.VarChar(100)
+  destinationCountryCode String  @default("IN") @db.VarChar(2)
+  destinationPostalCode  String? @db.VarChar(20)
+
+  contactName  String @db.VarChar(100)
+  contactPhone String @db.VarChar(30)
+
+  notes String? @db.VarChar(1000)
+
+  requestedPickupAt DateTime  @db.Timestamptz(3)
+  confirmedPickupAt DateTime? @db.Timestamptz(3)
+  timeZone          String    @db.VarChar(100)
+
+  isDemo Boolean @default(false)
+
+  idempotencyKey     String @db.VarChar(100)
+  requestFingerprint String @db.VarChar(64)
+
+  responseDueAt DateTime  @db.Timestamptz(3)
+  acceptedAt    DateTime? @db.Timestamptz(3)
+  enRouteAt     DateTime? @db.Timestamptz(3)
+  arrivedAt     DateTime? @db.Timestamptz(3)
+  declinedAt    DateTime? @db.Timestamptz(3)
+  expiredAt     DateTime? @db.Timestamptz(3)
+  cancelledAt   DateTime? @db.Timestamptz(3)
+  completedAt   DateTime? @db.Timestamptz(3)
+
+  version Int @default(1)
+
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @db.Timestamptz(3)
+
+  events TransportRequestEvent[]
+
+  @@unique([ownerId, idempotencyKey])
+  @@index([ownerId, createdAt])
+  @@index([providerUserId, status, requestedPickupAt])
+  @@index([ambulanceListingId, status, requestedPickupAt])
+  @@index([petId])
+  @@index([status, responseDueAt])
+  @@map("transport_requests")
+}
+
+model TransportRequestEvent {
+  id                 String  @id @default(uuid()) @db.Uuid
+  transportRequestId String  @db.Uuid
+  actorId            String? @db.Uuid
+
+  request TransportRequest @relation(fields: [transportRequestId], references: [id], onDelete: Restrict)
+  actor   User?            @relation("TransportRequestEventActor", fields: [actorId], references: [id], onDelete: Restrict)
+
+  version Int
+
+  action         String                  @db.VarChar(100)
+  previousStatus TransportRequestStatus?
+  newStatus      TransportRequestStatus
+  reason         String?                 @db.VarChar(1000)
+  details        Json?
+
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+
+  @@unique([transportRequestId, version])
+  @@index([transportRequestId, createdAt])
+  @@index([actorId])
+  @@map("transport_request_events")
+}
+
+model IssueReport {
+  id String @id @default(uuid()) @db.Uuid
+
+  reporterId String @db.Uuid
+  reporter   User   @relation("IssueReportReporter", fields: [reporterId], references: [id], onDelete: Restrict)
+
+  articleId          String? @db.Uuid
+  vetListingId       String? @db.Uuid
+  ambulanceListingId String? @db.Uuid
+  chatbotResponseId  String? @db.Uuid
+
+  article          Article?          @relation(fields: [articleId], references: [id], onDelete: Restrict)
+  vetListing       VetListing?       @relation(fields: [vetListingId], references: [id], onDelete: Restrict)
+  ambulanceListing AmbulanceListing? @relation(fields: [ambulanceListingId], references: [id], onDelete: Restrict)
+
+  targetLabel String @db.VarChar(250)
+
+  chatbotQuestion String? @db.VarChar(500)
+  chatbotResponse String? @db.VarChar(2000)
+  chatbotMode     String? @db.VarChar(50)
+
+  category IssueReportCategory
+  details  String              @db.VarChar(2000)
+  status   IssueReportStatus   @default(OPEN)
+
+  resolutionSummary String?   @db.VarChar(1000)
+  closedAt          DateTime? @db.Timestamptz(3)
+
+  idempotencyKey     String @db.VarChar(100)
+  requestFingerprint String @db.VarChar(64)
+
+  version Int @default(1)
+
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @db.Timestamptz(3)
+
+  events IssueReportEvent[]
+
+  @@unique([reporterId, idempotencyKey])
+  @@index([reporterId, createdAt])
+  @@index([status, createdAt])
+  @@index([category, status, createdAt])
+  @@index([articleId])
+  @@index([vetListingId])
+  @@index([ambulanceListingId])
+  @@index([chatbotResponseId])
+  @@map("issue_reports")
+}
+
+model IssueReportEvent {
+  id       String  @id @default(uuid()) @db.Uuid
+  reportId String  @db.Uuid
+  actorId  String? @db.Uuid
+
+  report IssueReport @relation(fields: [reportId], references: [id], onDelete: Restrict)
+  actor  User?       @relation("IssueReportEventActor", fields: [actorId], references: [id], onDelete: Restrict)
+
+  version Int
+
+  action         String             @db.VarChar(100)
+  previousStatus IssueReportStatus?
+  newStatus      IssueReportStatus
+
+  reason String? @db.VarChar(1000)
+
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+
+  @@unique([reportId, version])
+  @@index([reportId, createdAt])
+  @@index([actorId])
+  @@map("issue_report_events")
+}
