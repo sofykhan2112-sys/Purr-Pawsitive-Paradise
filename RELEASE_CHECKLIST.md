@@ -8,6 +8,9 @@
 - [x] Prisma migrations working
 - [x] Production frontend build succeeds
 - [x] Production backend build succeeds
+- [x] Backend production build passes after dependency security fixes
+- [x] Prisma schema validation passes
+- [x] Prisma migration status is up to date
 
 ## Accounts and security
 
@@ -24,6 +27,8 @@
 - [x] Administrator MFA implemented
 - [x] Administrator audit events verified
 - [x] Administrator MFA recovery procedure implemented and tested
+- [x] Backend production dependency audit passes with 0 vulnerabilities
+- [x] Frontend production dependency audit passes with 0 vulnerabilities
 
 ## Pet profiles
 
@@ -150,6 +155,15 @@
 - [x] Meaningful article image alt text supported
 - [x] Readable errors checked
 
+## Browser compatibility
+
+- [x] Browser compatibility verified on current Google Chrome
+- [x] Browser compatibility verified on current Microsoft Edge
+- [x] Browser compatibility verified on current Mozilla Firefox
+- [ ] Safari compatibility not locally verified on Windows
+
+Safari requires testing on an Apple device or suitable Safari testing environment before claiming full Safari compatibility.
+
 ## Performance
 
 - [x] Production build tested with Lighthouse
@@ -175,6 +189,16 @@ Performance optimization has been deferred for now.
 - [x] DEPLOYMENT.md
 - [x] BACKUP_RESTORE.md
 - [x] RELEASE_CHECKLIST.md
+
+## Version control and repository
+
+- [x] Git repository initialized
+- [x] Root .gitignore configured
+- [x] Production environment secrets excluded from Git
+- [x] Database backup files excluded from Git
+- [x] Initial project commit created
+- [x] GitHub repository configured
+- [x] Main branch pushed successfully to GitHub
 
 ## Production deployment
 
@@ -213,8 +237,8 @@ The following items are intentionally deferred:
 
 ## Current release assessment
 
-The application software and core workflows are complete for local academic/demo use, including administrator MFA recovery-code support and final production build verification.
+The application software and core workflows are complete for local academic/demo use, including administrator MFA recovery-code support, production dependency security verification, final production build verification, Prisma validation, backup restoration testing, and compatibility testing on Chrome, Edge, and Firefox.
 
 The project is suitable for continued academic/demo use in its current form.
 
-A real public production launch still requires completion of the deferred release items above.
+A real public production launch still requires completion of the deferred release items above, including FR02 content completion, performance optimization, Safari verification, operational partner readiness where applicable, and production deployment.
