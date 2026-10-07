@@ -167,6 +167,7 @@ Safari requires testing on an Apple device or suitable Safari testing environmen
 ## Performance
 
 - [x] Production build tested with Lighthouse
+- [x] Local article search API p95 response time is below 1 second
 - [ ] LCP performance target met
 - [ ] Total Blocking Time optimized
 
@@ -180,6 +181,13 @@ Current clean Lighthouse test:
 - Total Blocking Time: 690 ms
 - Cumulative Layout Shift: 0.087
 - Speed Index: 1.9 s
+
+Local API timing test:
+
+- Article search average response time: 222.29 ms
+- Article search p95 response time: 229.62 ms
+- Target: below 1000 ms p95
+- Result: Passed
 
 Performance optimization has been deferred for now.
 
@@ -237,8 +245,10 @@ The following items are intentionally deferred:
 
 ## Current release assessment
 
-The application software and core workflows are complete for local academic/demo use, including administrator MFA recovery-code support, production dependency security verification, final production build verification, Prisma validation, backup restoration testing, and compatibility testing on Chrome, Edge, and Firefox.
+The application software and core workflows are complete for local academic/demo use, including administrator MFA recovery-code support, production dependency security verification, final production build verification, Prisma validation, backup restoration testing, compatibility testing on Chrome, Edge, and Firefox, and local API performance verification.
 
 The project is suitable for continued academic/demo use in its current form.
 
-A real public production launch still requires completion of the deferred release items above, including FR02 content completion, performance optimization, Safari verification, operational partner readiness where applicable, and production deployment.
+The local article search API performance target has been met, with a measured p95 response time of 229.62 ms against the target of below 1000 ms.
+
+A real public production launch still requires completion of the deferred release items above, including FR02 content completion, Lighthouse/LCP performance optimization, Safari verification, operational partner readiness where applicable, and production deployment.
