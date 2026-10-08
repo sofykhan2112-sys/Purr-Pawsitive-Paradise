@@ -56,11 +56,18 @@ const mfaEncryptionKey =
 const PgSessionStore =
   connectPgSimple(session)
 
-const sessionPool =
-  new pg.Pool({
-    max: 5,
-    connectionTimeoutMillis: 5000,
-  })
+  const databaseUrl = process.env.DATABASE_URL
+
+  if (!databaseUrl) {
+    throw new Error('Missing DATABASE_URL environment variable')
+  }
+  
+  const sessionPool =
+    new pg.Pool({
+      connectionString: databaseUrl,
+      max: 5,
+      connectionTimeoutMillis: 5000,
+    })
 
 sessionPool.on('error', () => {
   console.error(
