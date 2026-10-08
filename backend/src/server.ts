@@ -40,6 +40,11 @@ declare module 'express-session' {
 }
 
 const app = express()
+
+if (process.env.NODE_ENV === 'production') {
+  app.set('trust proxy', 1)
+}
+
 const port = Number(process.env.PORT ?? 5000)
 
 const chatbotLimiter =
