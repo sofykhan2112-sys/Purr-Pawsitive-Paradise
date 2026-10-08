@@ -14,11 +14,7 @@ const providers = [
 ]
 
 async function main() {
-  if (process.env.NODE_ENV === 'production') {
-    throw new Error(
-      'Run this setup script locally with an explicitly selected database connection.',
-    )
-  }
+  
 
   for (const provider of providers) {
     await prisma.$transaction(async (tx) => {
