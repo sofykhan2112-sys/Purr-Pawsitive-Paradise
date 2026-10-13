@@ -275,8 +275,12 @@ function AppointmentRequest() {
       uncertain ||
       receipt
     ) {
-      setSlotsLoading(false)
-      return
+      const timeoutId = window.setTimeout(
+        () => setSlotsLoading(false),
+        0,
+      )
+
+      return () => window.clearTimeout(timeoutId)
     }
   
     const controller = new AbortController()

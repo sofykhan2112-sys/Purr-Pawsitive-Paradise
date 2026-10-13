@@ -1,6 +1,9 @@
 import { prisma } from './db.js'
+import { assertLocalMaintenanceDatabase } from './local-database-safety.js'
 
 async function makeAdmin() {
+  assertLocalMaintenanceDatabase()
+
   const email = process.argv[2]?.trim().toLowerCase()
 
   if (!email) {

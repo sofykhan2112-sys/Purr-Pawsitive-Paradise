@@ -2,6 +2,8 @@ import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router'
 import './AdminVetEditor.css'
 
+const initialClock = Date.now()
+
 type TransportRequest = {
   id: string
   status: string
@@ -57,7 +59,7 @@ function MyTransportRequests() {
   const [error, setError] = useState('')
   const [accessStatus, setAccessStatus] =
     useState<401 | 403 | null>(null)
-  const [clock, setClock] = useState(Date.now())
+  const [clock, setClock] = useState(initialClock)
   const [busyId, setBusyId] = useState<string | null>(null)
   const [actionMessage, setActionMessage] = useState('')
   const actionInFlight = useRef(false)

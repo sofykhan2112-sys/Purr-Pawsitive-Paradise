@@ -769,7 +769,7 @@ function VetAppointments() {
                     </p>
 
                     {appointment.status === 'REQUESTED' &&
-                     Date.parse(appointment.requestedStartAt) <= Date.now() && (
+                     Date.parse(appointment.requestedStartAt) <= new Date().getTime() && (
                       <p className="vet-editor-notice">
                         The requested start time has passed. This
                         request has not been automatically expired.
@@ -817,7 +817,7 @@ function VetAppointments() {
   appointment.status === 'RESCHEDULE_PROPOSED'
 ) &&
   appointment.confirmedStartAt &&
-  Date.parse(appointment.confirmedStartAt) > Date.now() && (
+  Date.parse(appointment.confirmedStartAt) > new Date().getTime() && (
     <div style={{ margin: '1rem 0' }}>
       <button
         className="button dark-button"
@@ -894,7 +894,7 @@ function VetAppointments() {
 {appointment.status === 'CONFIRMED' && (
   <div style={{ margin: '1rem 0' }}>
     {appointment.confirmedStartAt &&
-    Date.parse(appointment.confirmedStartAt) > Date.now() ? (
+    Date.parse(appointment.confirmedStartAt) > new Date().getTime() ? (
       rescheduleId !== appointment.id ? (
         <button
           className="button dark-button"
@@ -1020,7 +1020,7 @@ function VetAppointments() {
           busyId !== null ||
           !appointment.confirmedEndAt ||
           !Number.isFinite(Date.parse(appointment.confirmedEndAt)) ||
-          Date.parse(appointment.confirmedEndAt) > Date.now()
+          Date.parse(appointment.confirmedEndAt) > new Date().getTime()
         }
         onClick={() => void completeAppointment(appointment)}
       >
@@ -1028,7 +1028,7 @@ function VetAppointments() {
       </button>
 
       {appointment.confirmedEndAt &&
-        Date.parse(appointment.confirmedEndAt) > Date.now() && (
+        Date.parse(appointment.confirmedEndAt) > new Date().getTime() && (
           <p>
             Available after the scheduled end time.
             Refresh the list when that time has passed.
@@ -1074,7 +1074,7 @@ function VetAppointments() {
       type="button"
       disabled={
         busyId !== null ||
-        Date.parse(appointment.requestedStartAt) <= Date.now()
+        Date.parse(appointment.requestedStartAt) <= new Date().getTime()
       }
       onClick={() => void acceptRequest(appointment)}
     >

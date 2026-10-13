@@ -69,10 +69,7 @@ import {
     ] = useState('')
   
     useEffect(() => {
-      if (!petGroup) {
-        setLoading(false)
-        return
-      }
+      if (!petGroup) return
   
       const controller =
         new AbortController()
@@ -160,6 +157,8 @@ import {
       return () =>
         controller.abort()
     }, [petGroup])
+
+    const pageLoading = Boolean(petGroup) && loading
   
     if (!petGroup) {
       return (
@@ -243,7 +242,7 @@ import {
           </p>
         </header>
   
-        {loading ? (
+        {pageLoading ? (
           <p role="status">
             Loading library…
           </p>
@@ -311,4 +310,3 @@ import {
   }
   
   export default BreedLibrary
-  

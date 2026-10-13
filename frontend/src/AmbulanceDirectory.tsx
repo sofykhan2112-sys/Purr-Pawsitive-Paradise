@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router'
 import './AdminVetEditor.css'
 
+const initialClock = Date.now()
+
 type AmbulanceListing = {
   id: string
   providerName: string
@@ -78,7 +80,7 @@ function AmbulanceDirectory() {
   const [data, setData] = useState<DirectoryPage | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
-  const [clock, setClock] = useState(Date.now())
+  const [clock, setClock] = useState(initialClock)
 
   useEffect(() => {
     const controller = new AbortController()
@@ -357,17 +359,28 @@ function AmbulanceDirectory() {
                 >
                   <p className="eyebrow">
                     {listing.isDemo
-                      ? 'FICTIONAL DEMO PROVIDER'
+                      ? 'DEMO — Not a real ambulance service'
                       : 'ANIMAL TRANSPORT PROVIDER'}
                   </p>
 
                   <h2>{listing.providerName}</h2>
 
                   {listing.isDemo && (
-                    <p className="vet-editor-notice">
-                      Demonstration only. This listing has no real
-                      ambulance, phone contact, or transport service.
-                    </p>
+                    <>
+                      <p className="vet-editor-notice">
+                        DEMO — Not a real ambulance service. This
+                        fictional listing has no real ambulance, phone
+                        contact, or transport service.
+                      </p>
+                      <p>
+                        <Link
+                          className="button dark-button"
+                          to={`/ambulances/${listing.id}/demo-request`}
+                        >
+                          Try simulated request
+                        </Link>
+                      </p>
+                    </>
                   )}
 
                   {listing.description && <p>{listing.description}</p>}

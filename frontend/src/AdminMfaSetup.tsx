@@ -33,6 +33,11 @@ import {
     manualSecret?: string
     otpauthUri?: string
   }
+
+  type EnableResponse = {
+    message?: string
+    recoveryCodes?: string[]
+  }
   
   function AdminMfaSetup() {
     const navigate =
@@ -76,6 +81,11 @@ import {
       success,
       setSuccess,
     ] = useState('')
+
+    const [
+      recoveryCodes,
+      setRecoveryCodes,
+    ] = useState<string[]>([])
   
     useEffect(() => {
       const controller =
@@ -324,11 +334,13 @@ import {
           )
   
         const data =
-          await response
+          (await response
             .json()
             .catch(
               () => null,
-            )
+            )) as
+              | EnableResponse
+              | null
   
         if (!response.ok) {
           throw new Error(
@@ -338,9 +350,32 @@ import {
               : 'Could not enable MFA.',
           )
         }
+
+        if (
+          !Array.isArray(
+            data?.recoveryCodes,
+          ) ||
+          data.recoveryCodes
+            .length === 0 ||
+          data.recoveryCodes.some(
+            (recoveryCode) =>
+              typeof recoveryCode !==
+                'string' ||
+              recoveryCode.length ===
+                0,
+          )
+        ) {
+          throw new Error(
+            'MFA was enabled, but the recovery codes could not be displayed. Open your account security settings to generate a new set.',
+          )
+        }
   
         setManualSecret('')
         setOtpauthUri('')
+
+        setRecoveryCodes(
+          data.recoveryCodes,
+        )
   
         setUser(
           (current) =>
@@ -528,6 +563,65 @@ import {
               administrator
               recovery process.
             </p>
+
+            {recoveryCodes.length >
+              0 && (
+              <div
+                style={{
+                  marginTop:
+                    '1.5rem',
+                  padding:
+                    '1rem',
+                  border:
+                    '1px solid #d8ded6',
+                  borderRadius:
+                    '8px',
+                  background:
+                    '#f8f8f3',
+                }}
+              >
+                <h3>
+                  Save these recovery codes now
+                </h3>
+
+                <p>
+                  Each code can be
+                  used once. They
+                  will not be shown
+                  again, so store
+                  them securely
+                  outside this
+                  project.
+                </p>
+
+                <ul
+                  style={{
+                    paddingLeft:
+                      '1.5rem',
+                    fontFamily:
+                      'monospace',
+                    lineHeight:
+                      '1.9',
+                  }}
+                >
+                  {recoveryCodes.map(
+                    (
+                      recoveryCode,
+                    ) => (
+                      <li
+                        key={
+                          recoveryCode
+                        }
+                      >
+                        {
+                          recoveryCode
+                        }
+                      </li>
+                    ),
+                  )}
+                </ul>
+              </div>
+            )}
           </section>
         ) : !manualSecret ? (
           <section className="vet-editor-form">

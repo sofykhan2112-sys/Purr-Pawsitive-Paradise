@@ -273,11 +273,10 @@ function AdminArticleEditor() {
 
   }, [id, navigate, retry])
 
+  const selectedSpecies = form?.species ?? ''
+
   useEffect(() => {
-    if (!form?.species) {
-      setBreedRecords([])
-      return
-    }
+    if (!selectedSpecies) return
 
     const controller = new AbortController()
 
@@ -286,7 +285,7 @@ function AdminArticleEditor() {
 
       try {
         const response = await fetch(
-          `/api/breeds?species=${encodeURIComponent(form!.species)}`,
+          `/api/breeds?species=${encodeURIComponent(selectedSpecies)}`,
           {
             credentials: 'same-origin',
             cache: 'no-store',
@@ -320,7 +319,7 @@ function AdminArticleEditor() {
     void loadBreedRecords()
 
     return () => controller.abort()
-  }, [form?.species])
+  }, [selectedSpecies])
 
   const dirty =
 
@@ -376,6 +375,9 @@ function AdminArticleEditor() {
   }
 
   function updateSpecies(value: string) {
+    setBreedRecords([])
+    setBreedRecordsLoading(false)
+
     setForm((current) =>
       current
         ? {

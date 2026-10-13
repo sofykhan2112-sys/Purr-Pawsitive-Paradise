@@ -13,6 +13,8 @@
     "start": "node dist/server.js",
     "db:check": "tsx src/check-db.ts",
     "seed:articles": "tsx src/seed-articles.ts",
+    "seed:demo-vets": "tsx src/seed-vets.ts",
+    "seed:demo-ambulances": "tsx src/seed-demo-ambulance.ts",
     "make-admin": "tsx src/make-admin.ts"
   },
   "keywords": [],

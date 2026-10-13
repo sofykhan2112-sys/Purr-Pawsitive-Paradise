@@ -75,7 +75,7 @@ type StoredChat = {
 }
 
 const chatStorageKey =
-  'purr-pawsitive-chat-session-v1'
+  'purr-pawsitive-chat-session-v2'
 
 const maxConversationMessages = 40
 
@@ -255,30 +255,26 @@ function formatSpecies(
 function Chatbot() {
   const navigate = useNavigate()
 
-  const storedChat = useRef(
-    readStoredChat(),
+  const [storedChat] = useState(
+    readStoredChat,
   )
 
   const [
     contextSelection,
     setContextSelection,
   ] = useState(
-    storedChat.current
-      ?.contextSelection ?? 'GENERAL',
+    storedChat?.contextSelection ?? 'GENERAL',
   )
 
   const [pets, setPets] =
     useState<Pet[]>([])
-
-  const [petsLoading, setPetsLoading] =
-    useState(true)
 
   const [question, setQuestion] =
     useState('')
 
   const [messages, setMessages] =
     useState<ChatMessage[]>(
-      storedChat.current?.messages ?? [],
+      storedChat?.messages ?? [],
     )
 
     const [sending, setSending] =
@@ -333,6 +329,12 @@ function Chatbot() {
             !controller.signal.aborted
           ) {
             setPets([])
+            setContextSelection(
+              (current) =>
+                current.startsWith('PET:')
+                  ? 'GENERAL'
+                  : current,
+            )
           }
 
           return
@@ -348,16 +350,25 @@ function Chatbot() {
           !controller.signal.aborted
         ) {
           setPets(data.pets)
+          setContextSelection(
+            (current) => {
+              if (!current.startsWith('PET:')) {
+                return current
+              }
+
+              const selectedPetId = current.slice(4)
+
+              return data.pets.some(
+                (pet: Pet) => pet.id === selectedPetId,
+              )
+                ? current
+                : 'GENERAL'
+            },
+          )
         }
       } catch {
         // General chatbot remains
         // available if pets cannot load.
-      } finally {
-        if (
-          !controller.signal.aborted
-        ) {
-          setPetsLoading(false)
-        }
       }
     }
 
@@ -366,39 +377,6 @@ function Chatbot() {
     return () =>
       controller.abort()
   }, [])
-
-  useEffect(() => {
-    if (petsLoading) {
-      return
-    }
-
-    if (
-      !contextSelection.startsWith(
-        'PET:',
-      )
-    ) {
-      return
-    }
-
-    const selectedPetId =
-      contextSelection.slice(4)
-
-    const selectedPetExists =
-      pets.some(
-        (pet) =>
-          pet.id === selectedPetId,
-      )
-
-    if (!selectedPetExists) {
-      setContextSelection(
-        'GENERAL',
-      )
-    }
-  }, [
-    pets,
-    petsLoading,
-    contextSelection,
-  ])
 
   useEffect(() => {
     try {
@@ -450,9 +428,6 @@ function Chatbot() {
     ].slice(0, 20)
 
     if (sourceIds.length === 0) {
-      setUnavailableSourceIds(
-        [],
-      )
       return
     }
 
@@ -1011,8 +986,9 @@ function Chatbot() {
           <p className="chatbot-intro-copy">
             Ask questions about cat,
             dog, or turtle care. Answers
-            are based on currently
-            approved information from
+            are based on relevant,
+            currently published,
+            source-supported information from
             the Purr-Pawsitive content
             library.
           </p>
@@ -1244,6 +1220,14 @@ function Chatbot() {
                 )
               }
 
+              const availableSources =
+                message.sources.filter(
+                  (source) =>
+                    !unavailableSourceIds.includes(
+                      source.id,
+                    ),
+                )
+
               return (
                 <article
                   className="chatbot-message chatbot-message-assistant"
@@ -1259,15 +1243,15 @@ function Chatbot() {
                     </p>
                   </div>
 
-                  {message.sources
+                  {availableSources
                     .length > 0 && (
                     <div className="chatbot-sources">
                       <p className="chatbot-source-heading">
-                        Reviewed sources
+                        Relevant published sources
                       </p>
 
                       <div className="chatbot-source-grid">
-                        {message.sources.map(
+                        {availableSources.map(
                           (
                             source,
                           ) => (
@@ -1311,30 +1295,14 @@ function Chatbot() {
                                 </small>
                               )}
 
-                              {unavailableSourceIds.includes(
-                                source.id,
-                              ) ? (
-                                <div className="chatbot-stale-source">
-                                  <strong>
-                                    Source no longer currently available
-                                  </strong>
-
-                                  <span>
-                                    This article may have been archived,
-                                    unpublished, or reached its review
-                                    expiry since this response was created.
-                                  </span>
-                                </div>
-                              ) : (
-                                <Link
-                                  className="chatbot-source-link"
-                                  to={
-                                    source.href
-                                  }
-                                >
-                                  Read reviewed guidance
-                                </Link>
-                              )}
+                              <Link
+                                className="chatbot-source-link"
+                                to={
+                                  source.href
+                                }
+                              >
+                                Read published guidance
+                              </Link>
                             </article>
                           ),
                         )}
@@ -1490,7 +1458,7 @@ function Chatbot() {
           For urgent symptoms,
           diagnosis, treatment, or
           medication advice, contact a
-          qualified veterinarian.
+          licensed veterinarian.
         </p>
       </section>
     </main>

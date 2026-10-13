@@ -332,7 +332,7 @@ function AdminVetBooking() {
     vet.status !== 'PUBLISHED' ||
     !vet.publishedAt ||
     !Number.isFinite(Date.parse(vet.publishedAt)) ||
-    Date.parse(vet.publishedAt) > Date.now()
+    Date.parse(vet.publishedAt) > new Date().getTime()
   ) {
     blockers.push('The listing must be published.')
   }

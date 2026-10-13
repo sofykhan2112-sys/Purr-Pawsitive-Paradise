@@ -1,5 +1,10 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router'
+import {
+  AdminAccessNotice,
+} from './AdminAccessNotice'
+import { getAdminAccessFailure } from './adminAccess'
+import type { AdminAccessFailure } from './adminAccess'
 import './AdminVetEditor.css'
 
 type Ambulance = {
@@ -44,8 +49,8 @@ function AdminAmbulances() {
   const [busyId, setBusyId] = useState<string | null>(null)
   const [actionMessage, setActionMessage] = useState('')
   const actionInFlight = useRef(false)
-  const [accessStatus, setAccessStatus] =
-    useState<401 | 403 | null>(null)
+  const [accessFailure, setAccessFailure] =
+    useState<AdminAccessFailure | null>(null)
 
   useEffect(() => {
     const controller = new AbortController()
@@ -53,7 +58,7 @@ function AdminAmbulances() {
     async function load() {
       setLoading(true)
       setError('')
-      setAccessStatus(null)
+      setAccessFailure(null)
       setData(null)
 
       try {
@@ -68,8 +73,10 @@ function AdminAmbulances() {
 
         if (controller.signal.aborted) return
 
-        if (response.status === 401 || response.status === 403) {
-          setAccessStatus(response.status)
+        const failure = await getAdminAccessFailure(response)
+
+        if (failure) {
+          setAccessFailure(failure)
           return
         }
 
@@ -162,6 +169,13 @@ function AdminAmbulances() {
           }),
         },
       )
+
+      const failure = await getAdminAccessFailure(response)
+
+      if (failure) {
+        setAccessFailure(failure)
+        return
+      }
 
       const result = await response.json().catch(() => null)
 
@@ -279,6 +293,13 @@ function AdminAmbulances() {
         },
       )
   
+      const failure = await getAdminAccessFailure(response)
+
+      if (failure) {
+        setAccessFailure(failure)
+        return
+      }
+
       const result = await response.json().catch(() => null)
   
       if (!response.ok) {
@@ -392,6 +413,13 @@ function AdminAmbulances() {
         },
       )
 
+      const failure = await getAdminAccessFailure(response)
+
+      if (failure) {
+        setAccessFailure(failure)
+        return
+      }
+
       const result = await response.json().catch(() => null)
 
       if (!response.ok) {
@@ -470,6 +498,13 @@ function AdminAmbulances() {
         },
       )
 
+      const failure = await getAdminAccessFailure(response)
+
+      if (failure) {
+        setAccessFailure(failure)
+        return
+      }
+
       const result = await response.json().catch(() => null)
 
       if (!response.ok) {
@@ -522,16 +557,8 @@ function AdminAmbulances() {
         </p>
       </div>
 
-      {accessStatus ? (
-        <p role="alert">
-          {accessStatus === 401
-            ? 'Please sign in with an administrator account.'
-            : 'Administrator access is required.'}
-          {' '}
-          <Link to={accessStatus === 401 ? '/login' : '/account'}>
-            {accessStatus === 401 ? 'Sign in' : 'My account'}
-          </Link>
-        </p>
+      {accessFailure ? (
+        <AdminAccessNotice failure={accessFailure} />
       ) : (
         <div className="vet-editor-actions">
             <Link

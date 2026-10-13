@@ -1,4 +1,5 @@
 import { prisma } from './db.js'
+import { assertLocalMaintenanceDatabase } from './local-database-safety.js'
 
 type Species = 'CAT' | 'DOG' | 'TURTLE'
 
@@ -11,6 +12,7 @@ type Topic =
   | 'ENRICHMENT'
   | 'PREVENTIVE_CARE'
   | 'HEALTH'
+  | 'RAPID_RELIEF'
 
 type CoverageArticle = {
   slug: string
@@ -953,6 +955,153 @@ const turtleArticles: CoverageArticle[] = [
 ]
 
 // ======================================================
+// RAPID RELIEF CLINICAL DRAFTS
+// ======================================================
+
+const rapidReliefArticles: CoverageArticle[] = [
+  {
+    slug: 'cat-rapid-relief-emergency-warning-signs',
+    title: 'Cat emergency warning signs and safe transport',
+    species: 'CAT',
+    topic: 'RAPID_RELIEF',
+    summary:
+      'Draft emergency guidance on recognizing warning signs, contacting a veterinary facility and transporting a cat safely.',
+    body: clinicalDraftBody(
+      'Rapid Relief is intended to help an owner seek professional care without delay. It cannot determine the cause or severity of a cat’s condition. If a cat is struggling to breathe, collapses, is unresponsive, has an ongoing seizure, has severe bleeding, has experienced major trauma or may have been poisoned, contact a veterinarian or emergency veterinary facility immediately.',
+      [
+        {
+          heading: 'Contact professional help first',
+          paragraphs: [
+            'Call a veterinary facility as soon as possible, describe what happened and follow its instructions. Calling ahead also gives the receiving team an opportunity to prepare.',
+            'Do not delay urgent travel in order to continue reading, complete an online form or wait for symptoms to improve.',
+          ],
+        },
+        {
+          heading: 'Protect the cat and yourself',
+          paragraphs: [
+            'Check that the surrounding area is safe before approaching. Pain, fear and confusion can make even a familiar cat scratch or bite.',
+            'Keep the cat as quiet as practical and minimize unnecessary handling, particularly after trauma or when a spinal injury or broken bone is possible.',
+          ],
+        },
+        {
+          heading: 'Prepare for transport',
+          paragraphs: [
+            'Use a secure carrier or sturdy container when it can be done safely. A removable carrier top can allow gentler placement than pushing an injured cat through a small door.',
+            'Bring any relevant packaging when poisoning is suspected and tell the veterinary team about known medicines, recent events and observed changes.',
+          ],
+        },
+        {
+          heading: 'Avoid unadvised treatment',
+          paragraphs: [
+            'Do not give human medicines, force food or water, induce vomiting or attempt invasive first aid unless a veterinary professional specifically instructs you to do so.',
+          ],
+        },
+      ],
+    ),
+    sourceUrls: [
+      'https://vcahospitals.com/know-your-pet/emergencies-in-cats',
+      'https://www.rvc.ac.uk/small-animal-vet/general-practice/pet-care-advice/first-aid-guide',
+      'https://ebusiness.avma.org/files/ProductDownloads/mcm-client-brochures-pet-first-aid-2025.pdf',
+    ],
+    requiresClinicalReview: true,
+  },
+
+  {
+    slug: 'dog-rapid-relief-emergency-warning-signs',
+    title: 'Dog emergency warning signs and safe transport',
+    species: 'DOG',
+    topic: 'RAPID_RELIEF',
+    summary:
+      'Draft emergency guidance on recognizing warning signs, contacting a veterinary facility and transporting a dog safely.',
+    body: clinicalDraftBody(
+      'Rapid Relief is intended to help an owner seek professional care without delay. It cannot determine the cause or severity of a dog’s condition. If a dog is struggling to breathe, collapses, is unresponsive, has an ongoing seizure, has severe bleeding, has experienced major trauma or may have been poisoned, contact a veterinarian or emergency veterinary facility immediately.',
+      [
+        {
+          heading: 'Contact professional help first',
+          paragraphs: [
+            'Call a veterinary facility as soon as possible, describe what happened and follow its instructions. Calling ahead also gives the receiving team an opportunity to prepare.',
+            'Do not delay urgent travel in order to continue reading, complete an online form or wait for symptoms to improve.',
+          ],
+        },
+        {
+          heading: 'Protect the dog and yourself',
+          paragraphs: [
+            'Check that the surrounding area is safe before approaching. An injured or frightened dog may bite, so keep your face away from the mouth and ask another person to help when available.',
+            'Keep the dog as quiet as practical and minimize unnecessary movement, particularly after trauma or when a spinal injury or broken bone is possible.',
+          ],
+        },
+        {
+          heading: 'Prepare for transport',
+          paragraphs: [
+            'Use a secure carrier for a small dog when it can be done safely. A larger injured dog may need more than one person and a firm support or blanket for movement; follow the veterinary facility’s instructions.',
+            'Bring any relevant packaging when poisoning is suspected and tell the veterinary team about known medicines, recent events and observed changes.',
+          ],
+        },
+        {
+          heading: 'Avoid unadvised treatment',
+          paragraphs: [
+            'Do not give human medicines, force food or water, induce vomiting or attempt invasive first aid unless a veterinary professional specifically instructs you to do so.',
+          ],
+        },
+      ],
+    ),
+    sourceUrls: [
+      'https://vcahospitals.com/know-your-pet/common-emergencies-in-dogs',
+      'https://www.rvc.ac.uk/small-animal-vet/general-practice/pet-care-advice/first-aid-guide',
+      'https://ebusiness.avma.org/files/ProductDownloads/mcm-client-brochures-pet-first-aid-2025.pdf',
+    ],
+    requiresClinicalReview: true,
+  },
+
+  {
+    slug: 'turtle-rapid-relief-emergency-warning-signs',
+    title: 'Turtle emergency warning signs and safe transport',
+    species: 'TURTLE',
+    topic: 'RAPID_RELIEF',
+    summary:
+      'Draft emergency guidance on concerning changes, reptile-experienced veterinary care and safe transport for turtles.',
+    body: clinicalDraftBody(
+      'Rapid Relief is intended to help an owner seek professional care without delay. It cannot determine the cause or severity of a turtle’s condition. Serious trauma, uncontrolled bleeding, a significant shell injury, a burn, marked breathing difficulty, loss of normal responsiveness or a sudden inability to move requires prompt advice from a reptile-experienced veterinarian or emergency veterinary facility.',
+      [
+        {
+          heading: 'Contact suitable professional help',
+          paragraphs: [
+            'Call a veterinarian with reptile experience or an emergency veterinary facility as soon as possible, explain the species if known and describe what happened. Ask whether the facility can assess reptiles and follow its transport instructions.',
+            'Do not delay urgent travel in order to continue reading, complete an online form or wait for the turtle to return to normal.',
+          ],
+        },
+        {
+          heading: 'Limit further harm',
+          paragraphs: [
+            'Make the area safe and minimize unnecessary handling. Do not pull at damaged shell material or objects embedded in a wound.',
+            'Keep the turtle securely contained and separate from other animals. Ask the veterinary team how to manage temperature during transport because safe requirements vary by species and condition.',
+          ],
+        },
+        {
+          heading: 'Bring useful husbandry information',
+          paragraphs: [
+            'Tell the veterinary team about the enclosure, recent temperature and lighting readings, water conditions where relevant, diet, supplements, medicines and recent behaviour changes.',
+            'Bring relevant product packaging or photographs when a heat source, chemical, food, medication or enclosure hazard may be involved.',
+          ],
+        },
+        {
+          heading: 'Avoid unadvised treatment',
+          paragraphs: [
+            'Do not give medicines, apply creams, force-feed, soak or deliberately heat or cool an unwell turtle unless a reptile-experienced veterinary professional specifically instructs you to do so.',
+          ],
+        },
+      ],
+    ),
+    sourceUrls: [
+      'https://www.merckvetmanual.com/all-other-pets/reptiles/emergencies-of-reptiles',
+      'https://www.merckvetmanual.com/all-other-pets/reptiles/routine-health-care-of-reptiles',
+      'https://arav.org/',
+    ],
+    requiresClinicalReview: true,
+  },
+]
+
+// ======================================================
 // ALL COVERAGE ARTICLES
 // ======================================================
 
@@ -960,6 +1109,7 @@ const coverageArticles: CoverageArticle[] = [
   ...catArticles,
   ...dogArticles,
   ...turtleArticles,
+  ...rapidReliefArticles,
 ]
 
 // ======================================================
@@ -1099,6 +1249,8 @@ async function seedCoverageArticle(article: CoverageArticle) {
 // ======================================================
 
 async function seedArticles() {
+  assertLocalMaintenanceDatabase()
+
   console.log(
     'Starting Purr-Pawsitive Paradise article seed...',
   )
@@ -1145,7 +1297,7 @@ async function seedArticles() {
   )
   console.log('')
   console.log(
-    'Clinical HEALTH and PREVENTIVE_CARE content remains unpublished until qualified review is recorded.',
+    'Clinical HEALTH, PREVENTIVE_CARE, and RAPID_RELIEF content remains unpublished until qualified review is recorded.',
   )
 }
 

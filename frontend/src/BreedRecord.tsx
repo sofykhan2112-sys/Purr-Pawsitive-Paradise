@@ -62,13 +62,7 @@ import {
     ] = useState('')
   
     useEffect(() => {
-      if (!slug) {
-        setLoading(false)
-        setError(
-          'Record not found.',
-        )
-        return
-      }
+      if (!slug) return
   
       const controller =
         new AbortController()
@@ -172,6 +166,9 @@ import {
       return () =>
         controller.abort()
     }, [slug, species])
+
+    const pageLoading = Boolean(slug) && loading
+    const pageError = !slug ? 'Record not found.' : error
   
     return (
       <main className="page-width breed-library-page">
@@ -209,17 +206,17 @@ import {
           </Link>
         </nav>
   
-        {loading ? (
+        {pageLoading ? (
           <p role="status">
             Loading record…
           </p>
-        ) : error ? (
+        ) : pageError ? (
           <section>
             <p
               className="breed-library-notice"
               role="alert"
             >
-              {error}
+              {pageError}
             </p>
   
             <Link

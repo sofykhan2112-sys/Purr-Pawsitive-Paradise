@@ -16,6 +16,7 @@ import './Signup.css'
 type LoginResponse = {
   message?: string
   mfaRequired?: boolean
+  mfaSetupRecommended?: boolean
   recoveryCodeSupported?: boolean
   recoveryCodeUsed?: boolean
 
@@ -154,7 +155,9 @@ function Login() {
       }
 
       navigate(
-        '/account',
+        data?.mfaSetupRecommended === true
+          ? '/admin/mfa'
+          : '/account',
         {
           replace: true,
         },

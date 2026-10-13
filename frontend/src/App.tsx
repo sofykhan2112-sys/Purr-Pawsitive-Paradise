@@ -118,6 +118,10 @@ const TransportRequestForm = lazy(
   () => import('./TransportRequestForm'),
 )
 
+const DemoAmbulanceRequest = lazy(
+  () => import('./DemoAmbulanceRequest'),
+)
+
 const MyTransportRequests = lazy(
   () => import('./MyTransportRequests'),
 )
@@ -399,6 +403,11 @@ function App() {
           <Route
             path="/ambulances/:id/request"
             element={<TransportRequestForm />}
+          />
+
+          <Route
+            path="/ambulances/:id/demo-request"
+            element={<DemoAmbulanceRequest />}
           />
 
           <Route

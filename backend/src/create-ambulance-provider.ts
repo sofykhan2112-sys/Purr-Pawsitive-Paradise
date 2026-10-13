@@ -1,8 +1,10 @@
-import dotenv from 'dotenv'
+import 'dotenv/config'
 import * as argon2 from 'argon2'
-import { prisma } from './db.js'
+import { assertLocalMaintenanceDatabase } from './local-database-safety.js'
 
-dotenv.config()
+assertLocalMaintenanceDatabase()
+
+const { prisma } = await import('./db.js')
 
 async function main() {
   const name = process.env.PROVIDER_SETUP_NAME?.trim() ?? ''

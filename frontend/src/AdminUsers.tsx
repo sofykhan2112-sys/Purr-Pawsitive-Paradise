@@ -8,6 +8,11 @@ import {
     FormEvent,
   } from 'react'
   import { Link } from 'react-router'
+  import {
+    AdminAccessNotice,
+  } from './AdminAccessNotice'
+  import { getAdminAccessFailure } from './adminAccess'
+  import type { AdminAccessFailure } from './adminAccess'
   import './AdminVetEditor.css'
   
   type UserRole =
@@ -45,6 +50,9 @@ import {
   type StatusFilter =
     | ''
     | AccountStatus
+
+  const userRequestTimeoutMs =
+    10_000
   
   function formatLabel(
     value: string,
@@ -142,11 +150,7 @@ import {
       access,
       setAccess,
     ] =
-      useState<
-        | 'allowed'
-        | 'signin'
-        | 'forbidden'
-      >('allowed')
+      useState<'allowed' | AdminAccessFailure>('allowed')
   
     const [
       busyId,
@@ -162,11 +166,24 @@ import {
     useEffect(() => {
       const controller =
         new AbortController()
+
+      let disposed = false
+      let timedOut = false
+
+      const timeoutId =
+        window.setTimeout(
+          () => {
+            timedOut = true
+            controller.abort()
+          },
+          userRequestTimeoutMs,
+        )
   
       async function loadUsers() {
         setLoading(true)
         setError('')
         setAccess('allowed')
+        setData(null)
   
         try {
           const params =
@@ -212,32 +229,18 @@ import {
             )
   
           if (
-            controller.signal
-              .aborted
+            disposed
           ) {
             return
           }
   
-          if (
-            response.status ===
-            401
-          ) {
-            setAccess(
-              'signin',
+          const failure =
+            await getAdminAccessFailure(
+              response,
             )
-  
-            setData(null)
-  
-            return
-          }
-  
-          if (
-            response.status ===
-            403
-          ) {
-            setAccess(
-              'forbidden',
-            )
+
+          if (failure) {
+            setAccess(failure)
   
             setData(null)
   
@@ -297,21 +300,26 @@ import {
           loadError
         ) {
           if (
-            !controller.signal
-              .aborted
+            !disposed
           ) {
             setError(
-              loadError instanceof
-                Error
-                ? loadError.message
-                : 'Could not load users.',
+              timedOut
+                ? 'Loading users took too long. Check that the server is available, then try again.'
+                : loadError instanceof
+                    TypeError
+                  ? 'Could not reach the server. Check your connection, then try again.'
+                : loadError instanceof
+                    Error
+                  ? loadError.message
+                  : 'Could not load users.',
             )
           }
         } finally {
-          if (
-            !controller.signal
-              .aborted
-          ) {
+          window.clearTimeout(
+            timeoutId,
+          )
+
+          if (!disposed) {
             setLoading(
               false,
             )
@@ -321,8 +329,13 @@ import {
   
       void loadUsers()
   
-      return () =>
+      return () => {
+        disposed = true
+        window.clearTimeout(
+          timeoutId,
+        )
         controller.abort()
+      }
     }, [
       search,
       role,
@@ -420,38 +433,25 @@ import {
             },
           )
   
+        const failure =
+          await getAdminAccessFailure(
+            response,
+          )
+
+        if (failure) {
+          setAccess(failure)
+  
+          setData(null)
+  
+          return
+        }
+
         const result =
           await response
             .json()
             .catch(
               () => null,
             )
-  
-        if (
-          response.status ===
-          401
-        ) {
-          setAccess(
-            'signin',
-          )
-  
-          setData(null)
-  
-          return
-        }
-  
-        if (
-          response.status ===
-          403
-        ) {
-          setAccess(
-            'forbidden',
-          )
-  
-          setData(null)
-  
-          return
-        }
   
         if (!response.ok) {
           throw new Error(
@@ -757,22 +757,11 @@ import {
           <p role="status">
             Loading users…
           </p>
-        ) : access ===
-          'signin' ? (
-          <p>
-            Please{' '}
-            <Link to="/login">
-              sign in
-            </Link>{' '}
-            with an administrator
-            account.
-          </p>
-        ) : access ===
-          'forbidden' ? (
-          <p role="alert">
-            Administrator access
-            is required.
-          </p>
+        ) : access !==
+          'allowed' ? (
+          <AdminAccessNotice
+            failure={access}
+          />
         ) : data ? (
           <>
             <p>

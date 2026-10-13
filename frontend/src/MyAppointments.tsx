@@ -650,7 +650,7 @@ function MyAppointments() {
         disabled={
           busyId !== null ||
           !appointment.proposedStartAt ||
-          Date.parse(appointment.proposedStartAt) <= Date.now()
+          Date.parse(appointment.proposedStartAt) <= new Date().getTime()
         }
         onClick={() =>
           void respondToReschedule(appointment, 'ACCEPT')
@@ -785,7 +785,7 @@ function MyAppointments() {
       appointment.status === 'RESCHEDULE_PROPOSED'
     ) &&
     appointment.confirmedStartAt !== null &&
-    Date.parse(appointment.confirmedStartAt) > Date.now()
+    Date.parse(appointment.confirmedStartAt) > new Date().getTime()
   )
 ) && (
   <div style={{ marginTop: '1rem' }}>

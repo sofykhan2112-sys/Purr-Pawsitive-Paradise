@@ -1,5 +1,10 @@
 import { useEffect, useState } from 'react'
-import { Link, useNavigate } from 'react-router'
+import { Link } from 'react-router'
+import {
+  AdminAccessNotice,
+} from './AdminAccessNotice'
+import { getAdminAccessFailure } from './adminAccess'
+import type { AdminAccessFailure } from './adminAccess'
 import './AdminVets.css'
 
 type VetSummary = {
@@ -31,15 +36,14 @@ function readableStatus(value: string) {
 }
 
 function AdminVets() {
-  const navigate = useNavigate()
-
   const [vets, setVets] = useState<VetSummary[]>([])
   const [page, setPage] = useState(1)
   const [totalPages, setTotalPages] = useState(0)
   const [total, setTotal] = useState(0)
   const [loading, setLoading] = useState(true)
   const [loadError, setLoadError] = useState('')
-  const [accessDenied, setAccessDenied] = useState(false)
+  const [accessFailure, setAccessFailure] =
+    useState<AdminAccessFailure | null>(null)
   const [actionError, setActionError] = useState('')
   const [success, setSuccess] = useState('')
   const [busyId, setBusyId] = useState<string | null>(null)
@@ -52,7 +56,7 @@ function AdminVets() {
     async function loadVets() {
       setLoading(true)
       setLoadError('')
-      setAccessDenied(false)
+      setAccessFailure(null)
 
       try {
         const response = await fetch(
@@ -66,13 +70,10 @@ function AdminVets() {
 
         if (controller.signal.aborted) return
 
-        if (response.status === 401) {
-          navigate('/login', { replace: true })
-          return
-        }
+        const failure = await getAdminAccessFailure(response)
 
-        if (response.status === 403) {
-          setAccessDenied(true)
+        if (failure) {
+          setAccessFailure(failure)
           return
         }
 
@@ -115,7 +116,7 @@ function AdminVets() {
     void loadVets()
 
     return () => controller.abort()
-  }, [navigate, page, retry])
+  }, [page, retry])
 
   function reloadListings() {
     if (busyId) return
@@ -191,17 +192,10 @@ function AdminVets() {
         },
       )
 
-      if (response.status === 401) {
-        navigate('/login', { replace: true })
-        return
-      }
+      const failure = await getAdminAccessFailure(response)
 
-      if (response.status === 403) {
-        // A 403 may indicate a session permission or origin problem.
-        setNeedsReload(true)
-        setActionError(
-          'This action was denied. Reload to check your access.',
-        )
+      if (failure) {
+        setAccessFailure(failure)
         return
       }
 
@@ -309,14 +303,11 @@ function AdminVets() {
 
         {loading ? (
           <p role="status">Loading vet listings…</p>
-        ) : accessDenied ? (
-          <div className="admin-vets-notice">
-            <h2>Administrator access required.</h2>
-            <p>This account cannot manage vet listings.</p>
-            <Link className="text-link" to="/account">
-              Back to your account
-            </Link>
-          </div>
+        ) : accessFailure ? (
+          <AdminAccessNotice
+            failure={accessFailure}
+            className="admin-vets-notice"
+          />
         ) : loadError ? (
           <div className="admin-vets-error">
             <p role="alert">{loadError}</p>

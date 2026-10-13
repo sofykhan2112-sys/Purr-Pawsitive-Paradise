@@ -26,6 +26,8 @@ type Collection = {
   totalPages: number
 }
 
+const reliefRequestTimeoutMs = 10_000
+
 function displayDate(value: string | null) {
   if (!value) return 'Not recorded'
 
@@ -117,6 +119,13 @@ function ReliefCollection() {
 
   useEffect(() => {
     const controller = new AbortController()
+    let disposed = false
+    let timedOut = false
+
+    const timeoutId = window.setTimeout(() => {
+      timedOut = true
+      controller.abort()
+    }, reliefRequestTimeoutMs)
 
     async function load() {
       setLoading(true)
@@ -138,7 +147,7 @@ function ReliefCollection() {
 
         const result = await response.json().catch(() => null)
 
-        if (controller.signal.aborted) return
+        if (disposed) return
 
         if (!response.ok) {
           throw new Error(result?.message ?? 'Could not load guides.')
@@ -157,21 +166,42 @@ function ReliefCollection() {
           throw new Error('Unexpected guide response.')
         }
 
+        const lastPage = Math.max(1, result.totalPages)
+
+        if (page > lastPage) {
+          const next = new URLSearchParams()
+          if (species) next.set('species', species)
+          if (lastPage > 1) next.set('page', String(lastPage))
+          setParams(next, { replace: true })
+          return
+        }
+
         setData(result)
       } catch (error) {
-        if (!controller.signal.aborted) {
+        if (!disposed) {
           setError(
-            error instanceof Error ? error.message : 'Could not load guides.',
+            timedOut
+              ? 'Loading Rapid Relief guides took too long. Check that the server is available, then try again.'
+              : error instanceof TypeError
+                ? 'Could not reach the server. Check your connection, then try again.'
+                : error instanceof Error
+                  ? error.message
+                  : 'Could not load guides.',
           )
         }
       } finally {
-        if (!controller.signal.aborted) setLoading(false)
+        window.clearTimeout(timeoutId)
+        if (!disposed) setLoading(false)
       }
     }
 
     void load()
-    return () => controller.abort()
-  }, [species, page, refresh])
+    return () => {
+      disposed = true
+      window.clearTimeout(timeoutId)
+      controller.abort()
+    }
+  }, [species, page, refresh, setParams])
 
   function changePage(nextPage: number, nextSpecies = species) {
     const next = new URLSearchParams()
@@ -221,9 +251,10 @@ function ReliefCollection() {
         <>
           {data.articles.length === 0 ? (
             <p>
-              No published Rapid Relief guides are available for
-              this selection on this page. Use the contact links
-              above to find professional help.
+              No currently reviewed and published Rapid Relief guides
+              are available for this selection. Draft and demonstration
+              content is not shown here. Use the contact links above to
+              find professional help.
             </p>
           ) : (
             data.articles.map((article) => (
@@ -291,6 +322,13 @@ function ReliefArticle({ slug }: { slug: string }) {
 
   useEffect(() => {
     const controller = new AbortController()
+    let disposed = false
+    let timedOut = false
+
+    const timeoutId = window.setTimeout(() => {
+      timedOut = true
+      controller.abort()
+    }, reliefRequestTimeoutMs)
 
     async function load() {
       setLoading(true)
@@ -304,7 +342,7 @@ function ReliefArticle({ slug }: { slug: string }) {
         )
         const result = await response.json().catch(() => null)
 
-        if (controller.signal.aborted) return
+        if (disposed) return
 
         if (!response.ok) {
           throw new Error(
@@ -325,18 +363,29 @@ function ReliefArticle({ slug }: { slug: string }) {
 
         setArticle(result.article)
       } catch (error) {
-        if (!controller.signal.aborted) {
+        if (!disposed) {
           setError(
-            error instanceof Error ? error.message : 'Could not load guide.',
+            timedOut
+              ? 'Loading this Rapid Relief guide took too long. Please try again.'
+              : error instanceof TypeError
+                ? 'Could not reach the server. Check your connection, then try again.'
+                : error instanceof Error
+                  ? error.message
+                  : 'Could not load guide.',
           )
         }
       } finally {
-        if (!controller.signal.aborted) setLoading(false)
+        window.clearTimeout(timeoutId)
+        if (!disposed) setLoading(false)
       }
     }
 
     void load()
-    return () => controller.abort()
+    return () => {
+      disposed = true
+      window.clearTimeout(timeoutId)
+      controller.abort()
+    }
   }, [slug, refresh])
 
   return (

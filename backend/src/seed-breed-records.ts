@@ -1,4 +1,9 @@
-import { prisma } from './db.js'
+import 'dotenv/config'
+import { assertLocalMaintenanceDatabase } from './local-database-safety.js'
+
+assertLocalMaintenanceDatabase()
+
+const { prisma } = await import('./db.js')
 
 const records = [
   {

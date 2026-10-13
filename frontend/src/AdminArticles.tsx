@@ -1,6 +1,11 @@
 import { useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
-import { Link, useNavigate } from 'react-router'
+import { Link } from 'react-router'
+import {
+  AdminAccessNotice,
+} from './AdminAccessNotice'
+import { getAdminAccessFailure } from './adminAccess'
+import type { AdminAccessFailure } from './adminAccess'
 import './AdminArticles.css'
 
 type Article = {
@@ -28,15 +33,14 @@ const topics = [
 ]
 
 function AdminArticles() {
-  const navigate = useNavigate()
-
   const [articles, setArticles] = useState<Article[]>([])
   const [page, setPage] = useState(1)
   const [total, setTotal] = useState(0)
   const [totalPages, setTotalPages] = useState(0)
   const [loading, setLoading] = useState(true)
   const [allowed, setAllowed] = useState(false)
-  const [denied, setDenied] = useState(false)
+  const [accessFailure, setAccessFailure] =
+    useState<AdminAccessFailure | null>(null)
   const [loadError, setLoadError] = useState('')
   const [formError, setFormError] = useState('')
   const [success, setSuccess] = useState('')
@@ -50,6 +54,7 @@ function AdminArticles() {
     async function loadArticles() {
       setLoading(true)
       setLoadError('')
+      setAccessFailure(null)
 
       try {
         const response = await fetch(`/api/admin/articles?page=${page}`, {
@@ -58,15 +63,11 @@ function AdminArticles() {
           signal: controller.signal,
         })
 
-        if (response.status === 401) {
-          setAllowed(false)
-          navigate('/login', { replace: true })
-          return
-        }
+        const failure = await getAdminAccessFailure(response)
 
-        if (response.status === 403) {
+        if (failure) {
           setAllowed(false)
-          setDenied(true)
+          setAccessFailure(failure)
           return
         }
 
@@ -85,7 +86,7 @@ function AdminArticles() {
           setTotal(data.total)
           setTotalPages(data.totalPages)
           setAllowed(true)
-          setDenied(false)
+          setAccessFailure(null)
         }
       } catch (error) {
         if (!controller.signal.aborted) {
@@ -103,7 +104,7 @@ function AdminArticles() {
     void loadArticles()
 
     return () => controller.abort()
-  }, [navigate, page, retry])
+  }, [page, retry])
 
   async function handleCreate(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -145,14 +146,11 @@ function AdminArticles() {
         }),
       })
 
-      if (response.status === 401) {
-        navigate('/login', { replace: true })
-        return
-      }
+      const failure = await getAdminAccessFailure(response)
 
-      if (response.status === 403) {
+      if (failure) {
         setAllowed(false)
-        setDenied(true)
+        setAccessFailure(failure)
         return
       }
 
@@ -188,15 +186,11 @@ function AdminArticles() {
     }
   }
 
-  if (denied) {
+  if (accessFailure) {
     return (
       <main className="page-width admin-access-message">
         <p className="eyebrow">RESTRICTED AREA</p>
-        <h1>Administrator access required.</h1>
-        <p>Please use an administrator account to manage articles.</p>
-        <Link className="button dark-button" to="/account">
-          Back to account
-        </Link>
+        <AdminAccessNotice failure={accessFailure} />
       </main>
     )
   }
@@ -433,13 +427,15 @@ function AdminArticles() {
                         Updated {new Date(article.updatedAt).toLocaleDateString()}
                       </small>
                       <div>
-               b          <Link
-                            className="text-link"
-                                to={`/admin/articles/${article.id}`}
-                            >
-                       {article.status === 'DRAFT' ? 'Edit draft' : 'View article'}
-                             </Link>
-                        </div>
+                        <Link
+                          className="text-link"
+                          to={`/admin/articles/${article.id}`}
+                        >
+                          {article.status === 'DRAFT'
+                            ? 'Edit draft'
+                            : 'View article'}
+                        </Link>
+                      </div>
                     </div>
 
                     <span className={`admin-status status-${article.status.toLowerCase()}`}>

@@ -148,6 +148,42 @@ const speciesLabels:
     TURTLE: 'Turtles',
   }
 
+const topicsBySpecies:
+  Record<Species, RealArticleTopic[]> = {
+    CAT: [
+      'BREEDS_AND_SPECIES',
+      'DAILY_CARE',
+      'NUTRITION',
+      'GROOMING',
+      'ENRICHMENT',
+      'PREVENTIVE_CARE',
+      'HEALTH',
+      'RAPID_RELIEF',
+    ],
+    DOG: [
+      'BREEDS_AND_SPECIES',
+      'DAILY_CARE',
+      'NUTRITION',
+      'GROOMING',
+      'ENRICHMENT',
+      'PREVENTIVE_CARE',
+      'HEALTH',
+      'RAPID_RELIEF',
+    ],
+    TURTLE: [
+      'BREEDS_AND_SPECIES',
+      'DAILY_CARE',
+      'NUTRITION',
+      'HABITAT',
+      'PREVENTIVE_CARE',
+      'HEALTH',
+      'RAPID_RELIEF',
+    ],
+  }
+
+const articleRequestTimeoutMs =
+  10_000
+
 function ArticleCollection({
   species,
 }: {
@@ -333,9 +369,24 @@ function ArticleCollection({
     const controller =
       new AbortController()
 
+    let disposed = false
+    let timedOut = false
+
+    const timeoutId =
+      window.setTimeout(
+        () => {
+          timedOut = true
+          controller.abort()
+        },
+        articleRequestTimeoutMs,
+      )
+
     async function loadArticles() {
       setLoading(true)
       setError('')
+      setArticles([])
+      setTotal(0)
+      setTotalPages(0)
 
       const params =
         new URLSearchParams({
@@ -385,6 +436,10 @@ function ArticleCollection({
               () => null,
             )
 
+        if (disposed) {
+          return
+        }
+
         if (!response.ok) {
           throw new Error(
             typeof data
@@ -411,10 +466,18 @@ function ArticleCollection({
           )
         }
 
-        if (
-          !controller.signal
-            .aborted
-        ) {
+        const lastPage =
+          Math.max(
+            1,
+            data.totalPages,
+          )
+
+        if (page > lastPage) {
+          setPage(lastPage)
+          return
+        }
+
+        if (!disposed) {
           setArticles(
             data.articles,
           )
@@ -430,22 +493,25 @@ function ArticleCollection({
       } catch (
         loadError
       ) {
-        if (
-          !controller.signal
-            .aborted
-        ) {
+        if (!disposed) {
           setError(
-            loadError instanceof
-              Error
-              ? loadError.message
-              : 'Could not load articles. Please try again.',
+            timedOut
+              ? 'Loading articles took too long. Check that the server is available, then try again.'
+              : loadError instanceof
+                  TypeError
+                ? 'Could not reach the server. Check your connection, then try again.'
+                : loadError instanceof
+                    Error
+                  ? loadError.message
+                  : 'Could not load articles. Please try again.',
           )
         }
       } finally {
-        if (
-          !controller.signal
-            .aborted
-        ) {
+        window.clearTimeout(
+          timeoutId,
+        )
+
+        if (!disposed) {
           setLoading(false)
         }
       }
@@ -453,8 +519,13 @@ function ArticleCollection({
 
     void loadArticles()
 
-    return () =>
+    return () => {
+      disposed = true
+      window.clearTimeout(
+        timeoutId,
+      )
       controller.abort()
+    }
   }, [
     species,
     query,
@@ -475,6 +546,18 @@ function ArticleCollection({
 
     const controller =
       new AbortController()
+
+    let disposed = false
+    let timedOut = false
+
+    const timeoutId =
+      window.setTimeout(
+        () => {
+          timedOut = true
+          controller.abort()
+        },
+        articleRequestTimeoutMs,
+      )
 
     async function loadDetail() {
       setDetailLoading(
@@ -506,6 +589,10 @@ function ArticleCollection({
               () => null,
             )
 
+        if (disposed) {
+          return
+        }
+
         if (!response.ok) {
           throw new Error(
             response.status ===
@@ -531,10 +618,7 @@ function ArticleCollection({
           )
         }
 
-        if (
-          !controller.signal
-            .aborted
-        ) {
+        if (!disposed) {
           setDetail({
             ...data.article,
 
@@ -551,22 +635,25 @@ function ArticleCollection({
       } catch (
         loadError
       ) {
-        if (
-          !controller.signal
-            .aborted
-        ) {
+        if (!disposed) {
           setDetailError(
-            loadError instanceof
-              Error
-              ? loadError.message
-              : 'Could not open this article.',
+            timedOut
+              ? 'Opening this article took too long. Please try again.'
+              : loadError instanceof
+                  TypeError
+                ? 'Could not reach the server. Check your connection, then try again.'
+                : loadError instanceof
+                    Error
+                  ? loadError.message
+                  : 'Could not open this article.',
           )
         }
       } finally {
-        if (
-          !controller.signal
-            .aborted
-        ) {
+        window.clearTimeout(
+          timeoutId,
+        )
+
+        if (!disposed) {
           setDetailLoading(
             false,
           )
@@ -576,8 +663,13 @@ function ArticleCollection({
 
     void loadDetail()
 
-    return () =>
+    return () => {
+      disposed = true
+      window.clearTimeout(
+        timeoutId,
+      )
       controller.abort()
+    }
   }, [
     selectedSlug,
     detailRetry,
@@ -749,7 +841,16 @@ function ArticleCollection({
 
             {Object.entries(
               topicLabels,
-            ).map(
+            )
+              .filter(
+                ([value]) =>
+                  topicsBySpecies[
+                    species
+                  ].includes(
+                    value as RealArticleTopic,
+                  ),
+              )
+              .map(
               ([
                 value,
                 label,

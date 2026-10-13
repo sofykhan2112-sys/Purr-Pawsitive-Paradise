@@ -2,6 +2,8 @@ import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router'
 import './AdminVetEditor.css'
 
+const initialClock = Date.now()
+
 type TransportRequest = {
   id: string
   status: string
@@ -53,7 +55,7 @@ function AmbulanceRequests() {
   const [accessStatus, setAccessStatus] =
     useState<401 | 403 | null>(null)
   const [refresh, setRefresh] = useState(0)
-  const [clock, setClock] = useState(Date.now())
+  const [clock, setClock] = useState(initialClock)
   const [busyId, setBusyId] = useState<string | null>(null)
   const [actionMessage, setActionMessage] = useState('')
   const actionInFlight = useRef(false)
@@ -143,8 +145,8 @@ function AmbulanceRequests() {
 
     const deadline = Date.parse(request.responseDueAt)
 
-    if (!Number.isFinite(deadline) || deadline <= Date.now()) {
-      setClock(Date.now())
+    if (!Number.isFinite(deadline) || deadline <= new Date().getTime()) {
+      setClock(new Date().getTime())
       setActionMessage(
         'The response deadline has passed. This request cannot be accepted.',
       )
