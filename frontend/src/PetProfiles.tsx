@@ -17,6 +17,44 @@ const speciesLabels = {
   TURTLE: 'Turtle',
 }
 
+function PencilIcon() {
+  return (
+    <svg
+      className="pet-action-icon"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M12 20h9" />
+      <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4Z" />
+    </svg>
+  )
+}
+
+function TrashIcon() {
+  return (
+    <svg
+      className="pet-action-icon"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M3 6h18" />
+      <path d="M8 6V4h8v2" />
+      <path d="m19 6-1 14H6L5 6" />
+      <path d="M10 11v5M14 11v5" />
+    </svg>
+  )
+}
+
 function PetProfiles() {
   const navigate = useNavigate()
 
@@ -422,7 +460,8 @@ function PetProfiles() {
                       aria-label={`Edit ${pet.name}`}
                       onClick={() => startEditing(pet)}
                     >
-                      Edit
+                      <PencilIcon />
+                      <span>Edit pet</span>
                     </button>
 
                     <button
@@ -432,7 +471,10 @@ function PetProfiles() {
                       aria-label={`Delete ${pet.name}`}
                       onClick={() => handleDelete(pet)}
                     >
-                      {deletingId === pet.id ? 'Deleting…' : 'Delete'}
+                      <TrashIcon />
+                      <span>
+                        {deletingId === pet.id ? 'Deleting…' : 'Delete'}
+                      </span>
                     </button>
                   </div>
                 </article>
